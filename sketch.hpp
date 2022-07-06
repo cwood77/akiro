@@ -43,32 +43,35 @@
 //       start a monitor process
 //          wait for the ready status
 
+#include <string>
 #pragma once
 
 #define kNumMonitors 10
 
 namespace inmem {
 
-namespace cmds {
+namespace states {
    enum type {
-      kDead,
-      kReady,
-      kStaging,
-      kCompacting,
+      kStatus_Dead,
+      kStatus_Ready,
+      kStatus_Staging,
+      kStatus_Compacting,
 
-      kDie,
-      kCompact,
-      kTimestamps,
-      kRestore,
-      kPauseMonitor,
-      kUnpauseMonitor,
+      kCmd_Status,
+      kCmd_Die,
+      kCmd_Compact,
+      kCmd_Timestamps,
+      kCmd_Restore,
+      kCmd_PauseMonitor,
+      kCmd_UnpauseMonitor,
    };
 };
 
 struct heartbeatComms {
    unsigned long servicingProcessId;
-   size_t cmd;
+   size_t state;
    time_t lastAction;
+   size_t heartbeat;
 };
 
 struct monitorConfig : public heartbeatComms{
@@ -89,10 +92,10 @@ struct config {
    backupConfig backup;
 };
 
-extern std::string getMasterShmemName();
-//extern std::string getMasterShmemLockName();
-extern std::string getStagingOperationLockName();
+inline std::string getMasterShmemName() { return "cdwe_akiro_shmem" }
+inline std::string getStagingOperationLockName() { return "cdwe_akiro_shlock"; }
 extern std::string getServicingProcessTxSignalName(unsigned long pid);
 extern std::string getServicingProcessRxSignalName(unsigned long pid);
+extern std::string getServicingProcessHeartbeatSignalName(unsigned long pid);
 
 } // namespace inmem
