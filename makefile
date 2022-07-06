@@ -9,6 +9,7 @@ RELEASE_LNK_FLAGS_POST = -static-libgcc -static-libstdc++ -static
 
 debug: \
 	dirs \
+	$(OUT_DIR)/debug/akiro.txt \
 	$(OUT_DIR)/debug/akiro.exe \
 
 all: \
@@ -58,7 +59,12 @@ $(CMN_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
 # akiro
 
 AKIRO_SRC = \
+	src/akiro/configParser.cpp \
 	src/akiro/main.cpp \
+
+$(OUT_DIR)/debug/akiro.txt : akiro.txt
+	$(info $< --> $@)
+	@cp $< $@
 
 AKIRO_DEBUG_OBJ = $(subst src,$(OBJ_DIR)/debug,$(patsubst %.cpp,%.o,$(AKIRO_SRC)))
 

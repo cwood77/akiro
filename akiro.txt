@@ -1,0 +1,14 @@
+
+# you can make multiple monitor statements
+# monitoring is _always_ recursive to all subfolders, etc.
+# so don't put a monitor statement underneath another!
+monitor-absolute-path: C:\users\cwood\Documents\ReallyImportantProject
+  frequency-in-minutes: 5
+
+# There is only one backup statement
+backup:
+   absolute-path: F:\data\akiro
+
+   # you can set this to zero to keep everything
+   oldest-version-to-keep-in-days: 365
+
