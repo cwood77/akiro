@@ -3,6 +3,9 @@
 #include "../cmn/worker.hpp"
 #include <stdexcept>
 
+#include "../cmn/temp.hpp"
+#include <fstream>
+
 void myMain()
 {
    autoShmem<inmem::config> pShmem(inmem::getMasterShmemName());
@@ -18,8 +21,21 @@ void myMain()
       evt.wait();
       inmem::setState(&pShmem->backup.heartbeatAwk,pShmem->backup.heartbeat);
 
+      // kCmd_Compact
+      // kCmd_Timestamps
+      // kCmd_Restore
+      // kCmd_Cull
+
       if(pShmem->backup.state == inmem::states::kCmd_Die)
+      {
+         // try out temp files
+         auto path = reserveTempFilePath(L"compact");
+         ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
+         std::wofstream writer(path.c_str());
+         writer << L"test 1, 2, 3" << std::endl;
+
          break;
+      }
    }
 
    pShmem->backup.servicingProcessId = 0;

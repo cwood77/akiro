@@ -7,17 +7,17 @@ int main(int argc, const char *argv[])
 {
    try
    {
-      std::cout << "akiro - https://github.com/cwood77/akiro" << std::endl;
-      std::cout << std::endl;
+      std::wcout << L"akiro - https://github.com/cwood77/akiro" << std::endl;
+      std::wcout << std::endl;
 
       if(argc == 1)
       {
-         std::cout << "usage: akiro [verb]" << std::endl;
-         std::cout << std::endl;
-         std::cout << "examples:" << std::endl;
-         std::cout << "  akiro start - start up monitoring" << std::endl;
-         std::cout << "  akiro stop - shutdown monitoring" << std::endl;
-         std::cout << "  akiro status - report monitoring status" << std::endl;
+         std::wcout << L"usage: akiro [verb]" << std::endl;
+         std::wcout << std::endl;
+         std::wcout << L"examples:" << std::endl;
+         std::wcout << L"  akiro start - start up monitoring" << std::endl;
+         std::wcout << L"  akiro stop - shutdown monitoring" << std::endl;
+         std::wcout << L"  akiro status - report monitoring status" << std::endl;
          return 0;
       }
 

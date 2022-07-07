@@ -19,6 +19,7 @@ namespace states {
       kCmd_Compact,
       kCmd_Timestamps,
       kCmd_Restore,
+      kCmd_Cull,
       kCmd_PauseMonitor,
       kCmd_UnpauseMonitor,
    };

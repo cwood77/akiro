@@ -13,10 +13,9 @@ autoShmemBase::autoShmemBase(size_t size, const std::string& name)
       0,
       size,
       name.c_str());
+   m_existed = (::GetLastError() == ERROR_ALREADY_EXISTS);
    if(m_hMap == INVALID_HANDLE_VALUE)
       throw std::runtime_error("shared memory cannot be opened");
-
-   m_existed = (::GetLastError() == ERROR_ALREADY_EXISTS);
 
    m_pPtr = ::MapViewOfFile(
       m_hMap,

@@ -7,6 +7,9 @@
 #include <fstream>
 #include <iostream>
 
+// try out temp
+#include "../cmn/temp.hpp"
+
 void cmdStart(inmem::config& c)
 {
    std::wifstream file(exeAdjacentPath(L"akiro.txt").c_str());
@@ -15,7 +18,7 @@ void cmdStart(inmem::config& c)
 
    configParser::load(file,c);
 
-   std::cout << "starting workers..." << std::endl;
+   std::wcout << L"starting workers..." << std::endl;
    launchProcess(exeAdjacentPath(L"akcompact.exe -r"));
    inmem::waitForState(&c.backup.state,inmem::states::kStatus_Ready,
       10,"timeout waiting for akcompact EXE");
@@ -23,7 +26,7 @@ void cmdStart(inmem::config& c)
 
 void cmdStop(inmem::config& c)
 {
-   std::cout << "shutting down backup..." << std::endl;
+   std::wcout << L"shutting down backup..." << std::endl;
    inmem::setStateWhen(&c.backup.state,inmem::states::kStatus_Ready,
       inmem::states::kCmd_Die,
       10,"timeout telling backup to die");
@@ -31,6 +34,8 @@ void cmdStop(inmem::config& c)
       .raise();
    inmem::waitForState(&c.backup.state,inmem::states::kStatus_Dead,
       10,"timeout waiting for akcompact EXE");
+
+   dumpAndDestroyTempFile(c.backup.actionLogFile);
 }
 
 void cmdStatus(inmem::config& c)
@@ -39,5 +44,5 @@ void cmdStatus(inmem::config& c)
    osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
       .raise();
    inmem::waitForState(&c.backup.heartbeatAwk,ans,10,"backup doesn't seem responsive");
-   std::cout << "backup process is responsive" << std::endl;
+   std::wcout << L"backup process is responsive" << std::endl;
 }
