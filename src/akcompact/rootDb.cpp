@@ -11,6 +11,8 @@ rootDb::rootDb(inmem::config& c)
    {
       std::wstring line;
       std::getline(file,line);
+      if(line.empty())
+         continue;
       size_t id;
       ::swscanf(line.c_str(),L"%lld",&id);
       std::getline(file,line);
