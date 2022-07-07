@@ -55,6 +55,10 @@ extern std::string getServicingProcessTxSignalName(unsigned long pid);
 extern std::string getServicingProcessRxSignalName(unsigned long pid);
 extern std::string getServicingProcessHeartbeatSignalName(unsigned long pid);
 
+extern void setState(long *state, long desired);
+extern bool setStateWhen(long *state, long precondition, long desired, unsigned long timeout);
+extern void setStateWhen(long *state, long precondition, long desired, unsigned long timeout, const std::string& timeoutError);
 extern bool waitForState(long *state, long desired, unsigned long timeout);
+extern void waitForState(long *state, long desired, unsigned long timeout, const std::string& timeoutError);
 
 } // namespace inmem

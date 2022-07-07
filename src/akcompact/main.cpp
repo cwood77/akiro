@@ -11,6 +11,12 @@ void myMain()
 
    pShmem->backup.servicingProcessId = ::GetCurrentProcessId();
    ::InterlockedExchange(&pShmem->backup.state,inmem::states::kStatus_Ready);
+
+   osEvent evt(inmem::getServicingProcessTxSignalName(pShmem->backup.servicingProcessId));
+   evt.wait();
+
+   if(pShmem->backup.state == inmem::states::kCmd_Die)
+      inmem::setState(&pShmem->backup.state,inmem::states::kStatus_Dead);
 }
 
 implWorkerMain(myMain)

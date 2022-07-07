@@ -27,3 +27,15 @@ public:
    T *operator->() { return reinterpret_cast<T*>(m_pPtr); }
    T& operator*() { return *reinterpret_cast<T*>(m_pPtr); }
 };
+
+class osEvent {
+public:
+   explicit osEvent(const std::string& name);
+   ~osEvent();
+
+   void wait();
+   void raise();
+
+private:
+   HANDLE m_e;
+};

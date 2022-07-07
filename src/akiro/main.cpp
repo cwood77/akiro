@@ -27,9 +27,18 @@ int main(int argc, const char *argv[])
 
          std::cout << "starting workers..." << std::endl;
          launchProcess(exeAdjacentPath(L"akcompact.exe -r"));
-         if(!inmem::waitForState(&pShmem->backup.state,inmem::states::kStatus_Ready,10))
-            throw std::runtime_error("timeout waiting for akcompact EXE");
+         inmem::waitForState(&pShmem->backup.state,inmem::states::kStatus_Ready,
+            10,"timeout waiting for akcompact EXE");
       }
+
+      std::cout << "shutting down backup..." << std::endl;
+      inmem::setStateWhen(&pShmem->backup.state,inmem::states::kStatus_Ready,
+         inmem::states::kCmd_Die,
+         10,"timeout telling backup to die");
+      osEvent(inmem::getServicingProcessTxSignalName(pShmem->backup.servicingProcessId))
+         .raise();
+      inmem::waitForState(&pShmem->backup.state,inmem::states::kStatus_Dead,
+         10,"timeout waiting for akcompact EXE");
 
       return 0;
    }
