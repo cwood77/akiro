@@ -13,10 +13,17 @@ void myMain()
    ::InterlockedExchange(&pShmem->backup.state,inmem::states::kStatus_Ready);
 
    osEvent evt(inmem::getServicingProcessTxSignalName(pShmem->backup.servicingProcessId));
-   evt.wait();
+   while(true)
+   {
+      evt.wait();
+      inmem::setState(&pShmem->backup.heartbeatAwk,pShmem->backup.heartbeat);
 
-   if(pShmem->backup.state == inmem::states::kCmd_Die)
-      inmem::setState(&pShmem->backup.state,inmem::states::kStatus_Dead);
+      if(pShmem->backup.state == inmem::states::kCmd_Die)
+         break;
+   }
+
+   pShmem->backup.servicingProcessId = 0;
+   inmem::setState(&pShmem->backup.state,inmem::states::kStatus_Dead);
 }
 
 implWorkerMain(myMain)

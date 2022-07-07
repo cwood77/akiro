@@ -66,6 +66,7 @@ $(CMN_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
 # akiro
 
 AKIRO_SRC = \
+	src/akiro/cmdStartStopStatus.cpp \
 	src/akiro/configParser.cpp \
 	src/akiro/main.cpp \
 	src/akiro/start.cpp \

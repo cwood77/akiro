@@ -29,6 +29,7 @@ struct heartbeatComms {
    long state;
    time_t lastAction;
    long heartbeat;
+   long heartbeatAwk;
 };
 
 struct monitorConfig : public heartbeatComms{
