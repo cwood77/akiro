@@ -7,7 +7,7 @@ monitor-absolute-path: C:\users\cwood\Documents\ReallyImportantProject
 
 # There is only one backup statement
 backup:
-   absolute-path: F:\data\akiro
+   absolute-path: C:\cygwin64\home\cwood\dev\akiro-archive-testdata
 
    # you can set this to zero to keep everything
    oldest-version-to-keep-in-days: 365
