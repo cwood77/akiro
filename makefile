@@ -37,6 +37,7 @@ dirs:
 # cmn
 
 CMN_SRC = \
+	src/cmn/crypto.cpp \
 	src/cmn/path.cpp \
 	src/cmn/shmem-block.cpp \
 	src/cmn/shmem.cpp \
