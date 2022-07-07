@@ -1,6 +1,8 @@
+#include "../cmn/path.hpp"
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
 #include "configParser.hpp"
+#include "start.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -15,21 +17,23 @@ int main(int argc, const char *argv[])
 
       if(!pShmem.didExist())
       {
-         std::cout << "shmem block is empty; loading config..." << std::endl;
+         std::cout << "shmem block is empty!; loading config..." << std::endl;
 
-         wchar_t buffer[MAX_PATH];
-         ::GetModuleFileNameW(NULL,buffer,MAX_PATH-1);
-         std::wifstream file((std::wstring(buffer) + L"\\..\\akiro.txt").c_str());
+         std::wifstream file(exeAdjacentPath(L"akiro.txt").c_str());
          if(!file.good())
             throw std::runtime_error("config file doesn't exist or can't be opened");
 
          configParser::load(file,*pShmem);
+
+         std::cout << "starting workers..." << std::endl;
+         launchProcess(exeAdjacentPath(L"akcompact.exe -r"));
       }
+
+      return 0;
    }
    catch(std::exception& x)
    {
-      std::cout << "ERROR: " << x.what() << std::endl;
+      std::cerr << "ERROR: " << x.what() << std::endl;
+      return -1;
    }
-
-   return 0;
 }
