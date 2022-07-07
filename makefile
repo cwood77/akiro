@@ -103,6 +103,7 @@ $(AKIRO_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
 
 AKCOMPACT_SRC = \
 	src/akcompact/main.cpp \
+	src/akcompact/rootDb.cpp \
 
 AKCOMPACT_DEBUG_OBJ = $(subst src,$(OBJ_DIR)/debug,$(patsubst %.cpp,%.o,$(AKCOMPACT_SRC)))
 
