@@ -38,6 +38,7 @@ dirs:
 
 CMN_SRC = \
 	src/cmn/path.cpp \
+	src/cmn/shmem-block.cpp \
 	src/cmn/shmem.cpp \
 	src/cmn/worker.cpp \
 

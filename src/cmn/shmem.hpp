@@ -24,7 +24,6 @@ public:
    explicit autoShmem(const std::string& name)
    : autoShmemBase(sizeof(T),name) {}
 
-   T *operator->();
-
+   T *operator->() { return reinterpret_cast<T*>(m_pPtr); }
    T& operator*() { return *reinterpret_cast<T*>(m_pPtr); }
 };

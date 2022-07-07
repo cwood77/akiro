@@ -26,9 +26,9 @@ namespace states {
 
 struct heartbeatComms {
    unsigned long servicingProcessId;
-   size_t state;
+   long state;
    time_t lastAction;
-   size_t heartbeat;
+   long heartbeat;
 };
 
 struct monitorConfig : public heartbeatComms{
@@ -54,5 +54,7 @@ inline std::string getStagingOperationLockName() { return "cdwe_akiro_shlock"; }
 extern std::string getServicingProcessTxSignalName(unsigned long pid);
 extern std::string getServicingProcessRxSignalName(unsigned long pid);
 extern std::string getServicingProcessHeartbeatSignalName(unsigned long pid);
+
+extern bool waitForState(long *state, long desired, unsigned long timeout);
 
 } // namespace inmem
