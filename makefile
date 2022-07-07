@@ -43,6 +43,7 @@ CMN_SRC = \
 	src/cmn/shmem.cpp \
 	src/cmn/staging.cpp \
 	src/cmn/temp.cpp \
+	src/cmn/wlog.cpp \
 	src/cmn/worker.cpp \
 
 CMN_DEBUG_OBJ = $(subst src,$(OBJ_DIR)/debug,$(patsubst %.cpp,%.o,$(CMN_SRC)))
@@ -102,8 +103,10 @@ $(AKIRO_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
 # akcompact
 
 AKCOMPACT_SRC = \
+	src/akcompact/cmdCompact.cpp \
 	src/akcompact/main.cpp \
 	src/akcompact/rootDb.cpp \
+	src/akcompact/treeDb.cpp \
 
 AKCOMPACT_DEBUG_OBJ = $(subst src,$(OBJ_DIR)/debug,$(patsubst %.cpp,%.o,$(AKCOMPACT_SRC)))
 

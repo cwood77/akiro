@@ -1,10 +1,11 @@
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
-#include "../cmn/worker.hpp"
-#include <stdexcept>
-
 #include "../cmn/temp.hpp"
+#include "../cmn/wlog.hpp"
+#include "../cmn/worker.hpp"
+#include "cmdCompact.hpp"
 #include <fstream>
+#include <stdexcept>
 
 void myMain()
 {
@@ -21,21 +22,26 @@ void myMain()
       evt.wait();
       inmem::setState(&pShmem->backup.heartbeatAwk,pShmem->backup.heartbeat);
 
-      // kCmd_Compact
       // kCmd_Timestamps
       // kCmd_Restore
       // kCmd_Cull
 
-      if(pShmem->backup.state == inmem::states::kCmd_Die)
+      if(pShmem->backup.state == inmem::states::kCmd_Compact)
       {
          // try out temp files
          auto path = reserveTempFilePath(L"compact");
          ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
          std::wofstream writer(path.c_str());
-         writer << L"test 1, 2, 3" << std::endl;
-
-         break;
+         workerLogBinding _wb(writer);
+         getWorkerLog() << L"compacting" << std::endl;
+         cmdCompact(*pShmem);
+         getWorkerLog() << L"done" << std::endl;
       }
+
+      if(pShmem->backup.state == inmem::states::kCmd_Die)
+         break;
+
+      inmem::setState(&pShmem->backup.state,inmem::states::kStatus_Ready);
    }
 
    pShmem->backup.servicingProcessId = 0;

@@ -34,8 +34,6 @@ void cmdStop(inmem::config& c)
       .raise();
    inmem::waitForState(&c.backup.state,inmem::states::kStatus_Dead,
       10,"timeout waiting for akcompact EXE");
-
-   dumpAndDestroyTempFile(c.backup.actionLogFile);
 }
 
 void cmdStatus(inmem::config& c)
@@ -45,4 +43,17 @@ void cmdStatus(inmem::config& c)
       .raise();
    inmem::waitForState(&c.backup.heartbeatAwk,ans,10,"backup doesn't seem responsive");
    std::wcout << L"backup process is responsive" << std::endl;
+}
+
+void cmdCompact(inmem::config& c)
+{
+   inmem::setStateWhen(&c.backup.state,inmem::states::kStatus_Ready,
+      inmem::states::kCmd_Compact,
+      10,"timeout telling backup to compact");
+   osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
+      .raise();
+   inmem::waitForState(&c.backup.state,inmem::states::kStatus_Ready,
+      10,"timeout waiting for akcompact EXE");
+
+   dumpAndDestroyTempFile(c.backup.actionLogFile);
 }

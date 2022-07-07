@@ -41,6 +41,12 @@ int main(int argc, const char *argv[])
             throw std::runtime_error("processes aren't running");
          cmdStatus(*pShmem);
       }
+      else if(argc == 2 && argv[1] == std::string("compact"))
+      {
+         if(!pShmem.didExist())
+            throw std::runtime_error("processes aren't running");
+         cmdCompact(*pShmem);
+      }
       else
          throw std::runtime_error("bad usage");
 

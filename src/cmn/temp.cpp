@@ -33,9 +33,11 @@ void dumpAndDestroyTempFile(const std::wstring& path)
 {
    if(path.empty())
       return;
-   std::wifstream file(path.c_str());
-   std::wcout << L"[[redirecting from file: " << path << std::endl;
-   std::wcout << file.rdbuf();
-   std::wcout << L"]]" << std::endl;
+   {
+      std::wifstream file(path.c_str());
+      std::wcout << L"[[redirecting from file: " << path << std::endl;
+      std::wcout << file.rdbuf();
+      std::wcout << L"]]" << std::endl;
+   }
    ::DeleteFileW(path.c_str());
 }
