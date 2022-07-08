@@ -3,6 +3,8 @@
 #include "windows.h"
 #include <stdexcept>
 
+#include "wlog.hpp"
+
 bool fileExists(const std::wstring& path)
 {
    WIN32_FIND_DATAW fData;
@@ -87,7 +89,7 @@ void deleteFolderAndAllContents(const std::wstring& path)
    }
 }
 
-void copyDiskTree(const std::wstring& baseSrcPath, const std::wstring& baseDestPath)
+void copyDiskTree(const std::wstring& baseSrcPath, const std::wstring& baseDestPath, bool allowErrors)
 {
    WIN32_FIND_DATAW fData;
    HANDLE hFind = ::FindFirstFileW((baseSrcPath + L"\\*").c_str(),&fData);
@@ -105,20 +107,32 @@ void copyDiskTree(const std::wstring& baseSrcPath, const std::wstring& baseDestP
       std::wstring fullDestPath = baseDestPath + L"\\" + fData.cFileName;
 
       if(fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-         copyDiskTree(fullSrcPath,fullDestPath);
+         copyDiskTree(fullSrcPath,fullDestPath,allowErrors);
       else
       {
-         if(!destDirExists)
+         DWORD error;
+         try
          {
-            destDirExists = true;
-            ensurePathForFileExists(fullDestPath);
+            if(!destDirExists)
+            {
+               destDirExists = true;
+               ensurePathForFileExists(fullDestPath);
+            }
+            BOOL success = ::CopyFileW(
+               fullSrcPath.c_str(),
+               fullDestPath.c_str(),
+               /* bFailIfExists */TRUE);
+            error = ::GetLastError();
+            if(!success)
+               throw std::runtime_error("copy failed");
          }
-         BOOL success = ::CopyFileW(
-            fullSrcPath.c_str(),
-            fullDestPath.c_str(),
-            /* bFailIfExists */TRUE);
-         if(!success)
-            throw std::runtime_error("copy failed");
+         catch(std::exception& x)
+         {
+            if(!allowErrors)
+               throw;
+            else
+               getWorkerLog() << L"error " << error << L" copying file - " << fullSrcPath << std::endl;
+         }
       }
    }
    while(::FindNextFileW(hFind,&fData));

@@ -40,3 +40,24 @@ public:
 private:
    HANDLE m_e;
 };
+
+class mutex {
+public:
+   explicit mutex(const std::string& name);
+   ~mutex();
+
+   bool lock(DWORD timeoutInMs);
+   void unlock();
+
+private:
+   HANDLE m_han;
+};
+
+class autoLock {
+public:
+   explicit autoLock(mutex& m) : m_m(m) { m_m.lock(INFINITE); }
+   ~autoLock() { m_m.unlock(); }
+
+private:
+   mutex& m_m;
+};

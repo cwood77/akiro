@@ -4,6 +4,10 @@
 #include "cmdStage.hpp"
 #include <stdexcept>
 
+#include "../cmn/wlog.hpp"
+#include "../cmn/temp.hpp"
+#include <fstream>
+
 void myMain()
 {
    autoShmem<inmem::config> pShmem(inmem::getMasterShmemName());
@@ -25,16 +29,34 @@ void myMain()
    osEvent evt(inmem::getServicingProcessTxSignalName(monitorCfg.servicingProcessId));
    ::InterlockedExchange(&monitorCfg.state,inmem::states::kStatus_Ready);
 
+   bool once = true;
    while(true)
    {
       bool timedout;
       evt.waitWithTimeout(monitorCfg.frequencyInMinutes*60*1000,timedout);
       inmem::setState(&monitorCfg.heartbeatAwk,monitorCfg.heartbeat);
 
+      if(once)
+      {
+         timedout = true;
+         once = false;
+      }
+      else
+         timedout = false;
+
       if(timedout)
+      {
          if(inmem::setStateWhen(&monitorCfg.state,inmem::states::kStatus_Ready,
             inmem::states::kStatus_Staging,10))
-            cmdStage(*pShmem);
+         {
+            auto path = reserveTempFilePath(L"stage");
+            ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
+            std::wofstream writer(path.c_str());
+            workerLogBinding _wb(writer);
+
+            cmdStage(*pShmem,monitorCfg);
+         }
+      }
 
       if(monitorCfg.state == inmem::states::kCmd_Die)
          break;

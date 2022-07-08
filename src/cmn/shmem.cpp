@@ -63,3 +63,24 @@ void osEvent::raise()
 {
    ::SetEvent(m_e);
 }
+
+mutex::mutex(const std::string& name)
+{
+   m_han = ::CreateMutexA(NULL,FALSE,name.c_str());
+}
+
+mutex::~mutex()
+{
+   ::CloseHandle(m_han);
+}
+
+bool mutex::lock(DWORD timeoutInMs)
+{
+   DWORD rval = ::WaitForSingleObject(m_han,timeoutInMs);
+   return rval == WAIT_OBJECT_0;
+}
+
+void mutex::unlock()
+{
+   ::ReleaseMutex(m_han);
+}

@@ -83,6 +83,7 @@ stagingEntry reserveStagingEntry(inmem::config& c)
 
    std::wstringstream pathRoot;
    pathRoot << stagingPath << L"\\" << myId;
+   ensurePathExists(pathRoot.str());
    stagingEntry rval;
    rval.pathRoot = pathRoot.str();
    return rval;
