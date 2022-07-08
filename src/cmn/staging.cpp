@@ -1,9 +1,30 @@
 #include "../cmn/shmem-block.hpp"
 #include "file.hpp"
 #include "staging.hpp"
-#include <fstream>
-
 #include "wlog.hpp"
+#include <fstream>
+#include <set>
+#include <sstream>
+
+void stagingEntry::save()
+{
+   std::wofstream file((pathRoot + L".txt").c_str());
+   if(!file.good())
+      throw std::runtime_error("can't save staging file");
+   file << monitorPath << std::endl;
+   file << backupTime << std::endl;
+}
+
+void stagingEntry::eraseOnDisk()
+{
+   getWorkerLog() << L"removing stage " << pathRoot << std::endl;
+   {
+      BOOL success = ::DeleteFileW((pathRoot + L".txt").c_str());
+      if(!success)
+         throw std::runtime_error("failed to delete file");
+   }
+   deleteFolderAndAllContents(pathRoot);
+}
 
 std::list<stagingEntry> readStagingEntries(inmem::config& c)
 {
@@ -35,13 +56,34 @@ std::list<stagingEntry> readStagingEntries(inmem::config& c)
    return rval;
 }
 
-void stagingEntry::eraseOnDisk()
+stagingEntry reserveStagingEntry(inmem::config& c)
 {
-   getWorkerLog() << L"removing stage " << pathRoot << std::endl;
+   std::set<size_t> usedIds;
+   std::wstring stagingPath = std::wstring(c.backup.absolutePath) + L"\\s";
+   WIN32_FIND_DATAW fData;
+   HANDLE hFind = ::FindFirstFileW((stagingPath + L"\\*.txt").c_str(),&fData);
+   if(hFind != INVALID_HANDLE_VALUE)
    {
-      BOOL success = ::DeleteFileW((pathRoot + L".txt").c_str());
-      if(!success)
-         throw std::runtime_error("failed to delete file");
+      do
+      {
+         if(fData.cFileName == std::wstring(L".")) continue;
+         if(fData.cFileName == std::wstring(L"..")) continue;
+
+         size_t id = 0;
+         ::swscanf(fData.cFileName,L"%lld",&id);
+         usedIds.insert(id);
+      }
+      while(::FindNextFileW(hFind,&fData));
+      ::FindClose(hFind);
    }
-   deleteFolderAndAllContents(pathRoot);
+
+   size_t myId = 0;
+   if(usedIds.size())
+      myId = *(--usedIds.end()) + 1;
+
+   std::wstringstream pathRoot;
+   pathRoot << stagingPath << L"\\" << myId;
+   stagingEntry rval;
+   rval.pathRoot = pathRoot.str();
+   return rval;
 }

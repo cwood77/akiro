@@ -86,3 +86,41 @@ void deleteFolderAndAllContents(const std::wstring& path)
          throw std::runtime_error("failed to delete folder");
    }
 }
+
+void copyDiskTree(const std::wstring& baseSrcPath, const std::wstring& baseDestPath)
+{
+   WIN32_FIND_DATAW fData;
+   HANDLE hFind = ::FindFirstFileW((baseSrcPath + L"\\*").c_str(),&fData);
+   if(hFind == INVALID_HANDLE_VALUE)
+      return;
+   bool destDirExists = false;
+   do
+   {
+      if(fData.cFileName == std::wstring(L"."))
+         continue;
+      if(fData.cFileName == std::wstring(L".."))
+         continue;
+
+      std::wstring fullSrcPath = baseSrcPath + L"\\" + fData.cFileName;
+      std::wstring fullDestPath = baseDestPath + L"\\" + fData.cFileName;
+
+      if(fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+         copyDiskTree(fullSrcPath,fullDestPath);
+      else
+      {
+         if(!destDirExists)
+         {
+            destDirExists = true;
+            ensurePathForFileExists(fullDestPath);
+         }
+         BOOL success = ::CopyFileW(
+            fullSrcPath.c_str(),
+            fullDestPath.c_str(),
+            /* bFailIfExists */TRUE);
+         if(!success)
+            throw std::runtime_error("copy failed");
+      }
+   }
+   while(::FindNextFileW(hFind,&fData));
+   ::FindClose(hFind);
+}
