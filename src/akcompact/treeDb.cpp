@@ -12,6 +12,25 @@ void treeListing::save(std::wostream& s)
       s << it->second << L":" << it->first << std::endl;
 }
 
+void treeListing::load(std::wistream& s)
+{
+   while(s.good())
+   {
+      std::wstring line;
+      std::getline(s,line);
+      if(line.empty())
+         continue;
+
+      auto iColon = line.find(L':');
+      if(iColon == std::wstring::npos)
+         throw std::runtime_error("bad line format in timestamp file");
+
+      std::wstring hash(line.c_str(),iColon);
+      std::wstring path(line.c_str()+iColon+1);
+      files[path] = hash;
+   }
+}
+
 void treeListing::elaborate(const std::wstring& basePath)
 {
    WIN32_FIND_DATAW fData;
@@ -91,4 +110,12 @@ void treeDb::dump(std::wostream& s)
    for(auto timestamp : m_timestamps)
       s << L"   " << timestamp << std::endl;
    s << L"]" << std::endl;
+}
+
+void treeDb::load(const std::wstring& timestamp, treeListing& l)
+{
+   std::wifstream file((m_rootPath + L"\\" + timestamp).c_str());
+   if(!file.good())
+      throw std::runtime_error("timestamp file not found");
+   l.load(file);
 }

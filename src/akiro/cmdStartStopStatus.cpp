@@ -157,3 +157,19 @@ void cmdTimestamps(inmem::config& c, const std::wstring& dir)
 
    dumpAndDestroyTempFile(c.backup.actionLogFile);
 }
+
+void cmdRestore(inmem::config& c, const std::wstring& dir, const std::wstring& timestamp, const std::wstring& dest)
+{
+   inmem::setStateWhen(&c.backup.state,inmem::states::kStatus_Ready,
+      inmem::states::kCmd_Restore,
+      10,"waiting for backup to idle");
+   ::wcscpy(c.backup.args[0],dir.c_str());
+   ::wcscpy(c.backup.args[1],timestamp.c_str());
+   ::wcscpy(c.backup.args[2],dest.c_str());
+   osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
+      .raise();
+   inmem::waitForState(&c.backup.state,inmem::states::kStatus_Ready,
+      10,"timeout waiting for akcompact EXE");
+
+   dumpAndDestroyTempFile(c.backup.actionLogFile);
+}

@@ -1,3 +1,4 @@
+#include "../cmn/file.hpp"
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/staging.hpp"
 #include "../cmn/wlog.hpp"
@@ -57,4 +58,28 @@ void cmdTimestamps(inmem::config& c, const std::wstring& arg)
    size_t key = rDb.lookupKey(arg);
    treeDb tDb(c,key);
    tDb.dump(getWorkerLog());
+}
+
+void cmdRestore(inmem::config& c, const std::wstring& dir, const std::wstring& timestamp, const std::wstring& dest)
+{
+   rootDb rDb(c);
+   size_t key = rDb.lookupKey(dir);
+
+   treeDb tDb(c,key);
+   treeListing l;
+   tDb.load(timestamp,l);
+   for(auto it=l.files.begin();it!=l.files.end();++it)
+   {
+      getWorkerLog() << L"using " << it->second << L" for " << it->first;
+
+      std::wstring src = std::wstring(c.backup.absolutePath) + L"\\f\\" + it->second;
+      std::wstring dst = dest + L"\\" + it->first;
+      ensurePathForFileExists(dst);
+      BOOL success = ::CopyFileW(
+         src.c_str(),
+         dst.c_str(),
+         /* bFailIfExists */TRUE);
+      if(!success)
+         throw std::runtime_error("copy failed");
+   }
 }

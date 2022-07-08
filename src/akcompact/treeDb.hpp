@@ -10,6 +10,7 @@ public:
    std::map<std::wstring,std::wstring> files;
 
    void save(std::wostream& s);
+   void load(std::wistream& s);
 
    void elaborate(const std::wstring& basePath);
 };
@@ -20,6 +21,7 @@ public:
 
    void add(time_t timestamp, treeListing& l);
    void dump(std::wostream& s);
+   void load(const std::wstring& timestamp, treeListing& l);
 
 private:
    static std::wstring format(time_t timestamp);

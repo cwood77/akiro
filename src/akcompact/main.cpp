@@ -26,9 +26,6 @@ void myMain()
       myEvt.wait();
       inmem::setState(&pShmem->backup.heartbeatAwk,pShmem->backup.heartbeat);
 
-      // kCmd_Restore
-      // kCmd_Cull
-
       if(pShmem->backup.state == inmem::states::kCmd_Compact)
       {
          pShmem->backup.lastAction = ::time(NULL);
@@ -52,8 +49,6 @@ void myMain()
       }
       else if(pShmem->backup.state == inmem::states::kCmd_Timestamps)
       {
-         pShmem->backup.lastAction = ::time(NULL);
-
          auto path = reserveTempFilePath(L"timestamps");
          ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
          std::wofstream writer(path.c_str());
@@ -62,6 +57,23 @@ void myMain()
          try
          {
             cmdTimestamps(*pShmem,pShmem->backup.args[0]);
+         }
+         catch(std::exception& x)
+         {
+            getWorkerLog() << L"ERROR:" << x.what() << std::endl;
+         }
+         getWorkerLog() << L"done" << std::endl;
+      }
+      else if(pShmem->backup.state == inmem::states::kCmd_Restore)
+      {
+         auto path = reserveTempFilePath(L"restore");
+         ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
+         std::wofstream writer(path.c_str());
+         workerLogBinding _wb(writer);
+
+         try
+         {
+            cmdRestore(*pShmem,pShmem->backup.args[0],pShmem->backup.args[1],pShmem->backup.args[2]);
          }
          catch(std::exception& x)
          {

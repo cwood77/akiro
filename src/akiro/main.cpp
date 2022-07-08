@@ -20,6 +20,8 @@ int main(int argc, const char *argv[])
          std::wcout << L"  akiro stop - shutdown monitoring" << std::endl;
          std::wcout << L"  akiro status - report monitoring status" << std::endl;
          std::wcout << L"  akiro timestamps <dir> - list captured timestamps of dir" << std::endl;
+         std::wcout << L"  akiro restore <monitordir> <timestamp> <dest>" << std::endl;
+         std::wcout << L"    reconstruct <monitordir> as it was at <timestamp> in <dest>" << std::endl;
          return 0;
       }
 
@@ -54,6 +56,12 @@ int main(int argc, const char *argv[])
          if(!pShmem.didExist())
             throw std::runtime_error("processes aren't running");
          cmdTimestamps(*pShmem,widen(argv[2]));
+      }
+      else if(argc == 5 && argv[1] == std::string("restore"))
+      {
+         if(!pShmem.didExist())
+            throw std::runtime_error("processes aren't running");
+         cmdRestore(*pShmem,widen(argv[2]),widen(argv[3]),widen(argv[4]));
       }
       else
          throw std::runtime_error("bad usage");
