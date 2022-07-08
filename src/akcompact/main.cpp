@@ -1,10 +1,11 @@
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
-#include "../cmn/temp.hpp"
 #include "../cmn/wlog.hpp"
 #include "../cmn/worker.hpp"
 #include "cmdCompact.hpp"
 #include <fstream>
+#include <memory>
+#include <sstream>
 #include <stdexcept>
 
 void myMain()
@@ -28,12 +29,21 @@ void myMain()
 
       if(pShmem->backup.state == inmem::states::kCmd_Compact)
       {
+#if 0
          // try out temp files
          auto path = reserveTempFilePath(L"compact");
          ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
          std::wofstream writer(path.c_str());
          workerLogBinding _wb(writer);
          getWorkerLog() << L"compacting" << std::endl;
+#endif
+         std::unique_ptr<std::wostream> pStream;
+         if(pShmem->backup.lastCompactLogAbsolutePath[0])
+            pStream.reset(new std::wofstream(pShmem->backup.lastCompactLogAbsolutePath));
+         else
+            pStream.reset(new std::wstringstream());
+         workerLogBinding _wb(*pStream.get());
+
          try
          {
             cmdCompact(*pShmem);

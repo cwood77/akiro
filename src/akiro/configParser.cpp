@@ -29,6 +29,8 @@ void configParser::parseLine(const std::wstring& line)
    {
       if(startsWithAndAdvance(pThumb,L"frequency-in-minutes: "))
          ::swscanf(pThumb,L"%lld",&m_config.monitors[m_iMonitor].frequencyInMinutes);
+      else if(startsWithAndAdvance(pThumb,L"last-stage-log-absolute-path: "))
+         ::wcscpy(m_config.monitors[m_iMonitor].lastStageLogAbsolutePath,pThumb);
       else
          closeState();
    }
@@ -38,6 +40,8 @@ void configParser::parseLine(const std::wstring& line)
          ::wcscpy(m_config.backup.absolutePath,pThumb);
       else if(startsWithAndAdvance(pThumb,L"oldest-version-to-keep-in-days: "))
          ::swscanf(pThumb,L"%lld",&m_config.backup.oldestVersionToKeepInDays);
+      else if(startsWithAndAdvance(pThumb,L"last-compact-log-absolute-path: "))
+         ::wcscpy(m_config.backup.lastCompactLogAbsolutePath,pThumb);
       else
          closeState();
    }

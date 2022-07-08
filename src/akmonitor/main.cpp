@@ -1,12 +1,12 @@
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
+#include "../cmn/wlog.hpp"
 #include "../cmn/worker.hpp"
 #include "cmdStage.hpp"
-#include <stdexcept>
-
-#include "../cmn/wlog.hpp"
-#include "../cmn/temp.hpp"
 #include <fstream>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
 
 void myMain()
 {
@@ -49,10 +49,12 @@ void myMain()
          if(inmem::setStateWhen(&monitorCfg.state,inmem::states::kStatus_Ready,
             inmem::states::kStatus_Staging,10))
          {
-            auto path = reserveTempFilePath(L"stage");
-            ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
-            std::wofstream writer(path.c_str());
-            workerLogBinding _wb(writer);
+            std::unique_ptr<std::wostream> pStream;
+            if(monitorCfg.lastStageLogAbsolutePath[0])
+               pStream.reset(new std::wofstream(monitorCfg.lastStageLogAbsolutePath));
+            else
+               pStream.reset(new std::wstringstream());
+            workerLogBinding _wb(*pStream.get());
 
             cmdStage(*pShmem,monitorCfg);
          }

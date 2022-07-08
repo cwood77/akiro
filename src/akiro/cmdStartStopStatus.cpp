@@ -2,7 +2,7 @@
 #include "../cmn/path.hpp"
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
-#include "../cmn/temp.hpp"
+//#include "../cmn/temp.hpp"
 #include "cmdStartStopStatus.hpp"
 #include "configParser.hpp"
 #include "start.hpp"
@@ -116,5 +116,5 @@ void cmdCompact(inmem::config& c)
    inmem::waitForState(&c.backup.state,inmem::states::kStatus_Ready,
       10,"timeout waiting for akcompact EXE");
 
-   dumpAndDestroyTempFile(c.backup.actionLogFile);
+   //dumpAndDestroyTempFile(c.backup.actionLogFile);
 }
