@@ -9,6 +9,8 @@ class treeListing {
 public:
    std::map<std::wstring,std::wstring> files;
 
+   void save(std::wostream& s);
+
    void elaborate(const std::wstring& basePath);
 };
 
@@ -19,6 +21,8 @@ public:
    void add(time_t timestamp, treeListing& l);
 
 private:
+   static std::wstring format(time_t timestamp);
+
    std::wstring m_rootPath;
    std::set<std::wstring> m_timestamps;
 };

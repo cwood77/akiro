@@ -34,7 +34,14 @@ void myMain()
          std::wofstream writer(path.c_str());
          workerLogBinding _wb(writer);
          getWorkerLog() << L"compacting" << std::endl;
-         cmdCompact(*pShmem);
+         try
+         {
+            cmdCompact(*pShmem);
+         }
+         catch(std::exception& x)
+         {
+            getWorkerLog() << L"ERROR:" << x.what() << std::endl;
+         }
          getWorkerLog() << L"done" << std::endl;
       }
 

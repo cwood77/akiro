@@ -30,7 +30,6 @@ void cmdCompact(inmem::config& c)
 
       treeListing listing;
       listing.elaborate(it->pathRoot);
-
       for(auto jit=listing.files.begin();jit!=listing.files.end();++jit)
       {
          getWorkerLog()
@@ -45,7 +44,7 @@ void cmdCompact(inmem::config& c)
             << std::endl;
       }
 
-      //treeDb tDb(c,key);
-      //tDb.add(it->backupTime,listing);
+      treeDb tDb(c,key);
+      tDb.add(it->backupTime,listing);
    }
 }
