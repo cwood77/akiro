@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include "file.hpp"
 #include "temp.hpp"
 #include "windows.h"
 #include <fstream>
@@ -18,12 +19,8 @@ std::wstring reserveTempFilePath(const std::wstring& hint)
       std::wstringstream pathAttempt;
       pathAttempt << folder << L"akiro_" << hint << L"_" << i;
 
-      WIN32_FIND_DATAW fData;
-      HANDLE hFind = ::FindFirstFileW(pathAttempt.str().c_str(),&fData);
-      if(hFind != INVALID_HANDLE_VALUE)
-         ::CloseHandle(hFind);
-      else
-         return pathAttempt.str().c_str();
+      if(!fileExists(pathAttempt.str()))
+         return pathAttempt.str();
    }
 
    throw std::runtime_error("gave up picking a temp file");

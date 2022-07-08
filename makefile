@@ -38,6 +38,7 @@ dirs:
 
 CMN_SRC = \
 	src/cmn/crypto.cpp \
+	src/cmn/file.cpp \
 	src/cmn/path.cpp \
 	src/cmn/shmem-block.cpp \
 	src/cmn/shmem.cpp \
@@ -104,6 +105,7 @@ $(AKIRO_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
 
 AKCOMPACT_SRC = \
 	src/akcompact/cmdCompact.cpp \
+	src/akcompact/fileDb.cpp \
 	src/akcompact/main.cpp \
 	src/akcompact/rootDb.cpp \
 	src/akcompact/treeDb.cpp \

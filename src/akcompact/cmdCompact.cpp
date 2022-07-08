@@ -1,4 +1,3 @@
-#include "../cmn/crypto.hpp"
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/staging.hpp"
 #include "../cmn/wlog.hpp"
@@ -10,8 +9,7 @@
 void cmdCompact(inmem::config& c)
 {
    rootDb rDb(c);
-   //fileDb fDb(c);
-   autoCryptoContext cCtxt;
+   fileDb fDb(c);
 
    auto entries = readStagingEntries(c);
    for(auto it=entries.begin();it!=entries.end();++it)
@@ -39,12 +37,7 @@ void cmdCompact(inmem::config& c)
             << jit->first
             << std::endl;
 
-         md5Hasher hasher(cCtxt);
-         hasher.addFile(jit->first);
-
-         md5Hash h;
-         hasher.get(h);
-         jit->second = h.toString();
+         jit->second = fDb.addOrFetch(jit->first);
 
          getWorkerLog()
             << L"   hash is "

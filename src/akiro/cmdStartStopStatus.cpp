@@ -1,14 +1,13 @@
+#include "../cmn/file.hpp"
 #include "../cmn/path.hpp"
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
+#include "../cmn/temp.hpp"
 #include "cmdStartStopStatus.hpp"
 #include "configParser.hpp"
 #include "start.hpp"
 #include <fstream>
 #include <iostream>
-
-// try out temp
-#include "../cmn/temp.hpp"
 
 void cmdStart(inmem::config& c)
 {
@@ -17,6 +16,10 @@ void cmdStart(inmem::config& c)
       throw std::runtime_error("config file doesn't exist or can't be opened");
 
    configParser::load(file,c);
+
+   ensurePathExists(std::wstring(c.backup.absolutePath) + L"\\s"); // staging
+   ensurePathExists(std::wstring(c.backup.absolutePath) + L"\\t"); // treeDB
+   ensurePathExists(std::wstring(c.backup.absolutePath) + L"\\f"); // fileDB
 
    std::wcout << L"starting workers..." << std::endl;
    launchProcess(exeAdjacentPath(L"akcompact.exe -r"));

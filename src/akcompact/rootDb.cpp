@@ -4,7 +4,7 @@
 
 rootDb::rootDb(inmem::config& c)
 {
-   m_path = std::wstring(c.backup.absolutePath) + L"\\a\\roots.txt";
+   m_path = std::wstring(c.backup.absolutePath) + L"\\roots.txt";
 
    std::wifstream file(m_path.c_str());
    while(file.good())
