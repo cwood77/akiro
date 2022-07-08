@@ -12,11 +12,13 @@ debug: \
 	$(OUT_DIR)/debug/akiro.txt \
 	$(OUT_DIR)/debug/akiro.exe \
 	$(OUT_DIR)/debug/akcompact.exe \
+	$(OUT_DIR)/debug/akmonitor.exe \
 
 all: \
 	debug \
 	$(OUT_DIR)/release/akiro.exe \
 	$(OUT_DIR)/release/akcompact.exe \
+	$(OUT_DIR)/release/akmonitor.exe \
 
 clean:
 	rm -rf bin
@@ -25,9 +27,11 @@ dirs:
 	@mkdir -p $(OBJ_DIR)/debug/cmn
 	@mkdir -p $(OBJ_DIR)/debug/akiro
 	@mkdir -p $(OBJ_DIR)/debug/akcompact
+	@mkdir -p $(OBJ_DIR)/debug/akmonitor
 	@mkdir -p $(OBJ_DIR)/release/cmn
 	@mkdir -p $(OBJ_DIR)/release/akiro
 	@mkdir -p $(OBJ_DIR)/release/akcompact
+	@mkdir -p $(OBJ_DIR)/release/akmonitor
 	@mkdir -p $(OUT_DIR)/debug
 	@mkdir -p $(OUT_DIR)/release
 
@@ -127,5 +131,31 @@ $(OUT_DIR)/release/akcompact.exe: $(AKCOMPACT_RELEASE_OBJ) $(OUT_DIR)/release/cm
 	@$(LINK_CMD) -o $@ $(AKCOMPACT_RELEASE_OBJ) $(RELEASE_LNK_FLAGS_POST) -Lbin/out/release -lcmn
 
 $(AKCOMPACT_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
+	$(info $< --> $@)
+	@$(COMPILE_CMD) $(RELEASE_CC_FLAGS) $< -o $@
+
+# ----------------------------------------------------------------------
+# akmonitor
+
+AKMONITOR_SRC = \
+	src/akmonitor/main.cpp \
+
+AKMONITOR_DEBUG_OBJ = $(subst src,$(OBJ_DIR)/debug,$(patsubst %.cpp,%.o,$(AKMONITOR_SRC)))
+
+$(OUT_DIR)/debug/akmonitor.exe: $(AKMONITOR_DEBUG_OBJ) $(OUT_DIR)/debug/cmn.lib
+	$(info $< --> $@)
+	@$(LINK_CMD) -o $@ $(AKMONITOR_DEBUG_OBJ) $(DEBUG_LNK_FLAGS_POST) -Lbin/out/debug -lcmn
+
+$(AKMONITOR_DEBUG_OBJ): $(OBJ_DIR)/debug/%.o: src/%.cpp
+	$(info $< --> $@)
+	@$(COMPILE_CMD) $(DEBUG_CC_FLAGS) $< -o $@
+
+AKMONITOR_RELEASE_OBJ = $(subst src,$(OBJ_DIR)/release,$(patsubst %.cpp,%.o,$(AKMONITOR_SRC)))
+
+$(OUT_DIR)/release/akmonitor.exe: $(AKMONITOR_RELEASE_OBJ) $(OUT_DIR)/release/cmn.lib
+	$(info $< --> $@)
+	@$(LINK_CMD) -o $@ $(AKMONITOR_RELEASE_OBJ) $(RELEASE_LNK_FLAGS_POST) -Lbin/out/release -lcmn
+
+$(AKMONITOR_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
 	$(info $< --> $@)
 	@$(COMPILE_CMD) $(RELEASE_CC_FLAGS) $< -o $@

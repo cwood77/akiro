@@ -14,9 +14,9 @@ void myMain()
       throw std::runtime_error("shmem not configured!");
 
    pShmem->backup.servicingProcessId = ::GetCurrentProcessId();
+   osEvent evt(inmem::getServicingProcessTxSignalName(pShmem->backup.servicingProcessId));
    ::InterlockedExchange(&pShmem->backup.state,inmem::states::kStatus_Ready);
 
-   osEvent evt(inmem::getServicingProcessTxSignalName(pShmem->backup.servicingProcessId));
    while(true)
    {
       evt.wait();
