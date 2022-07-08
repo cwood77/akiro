@@ -26,20 +26,23 @@ void myMain()
    auto& monitorCfg = pShmem->monitors[myIndex];
 
    monitorCfg.servicingProcessId = ::GetCurrentProcessId();
-   osEvent evt(inmem::getServicingProcessTxSignalName(monitorCfg.servicingProcessId));
+   osEvent myEvt("");
+   heartbeatThread hbeat(monitorCfg,myEvt);
+   hbeat.start();
    ::InterlockedExchange(&monitorCfg.state,inmem::states::kStatus_Ready);
 
    while(true)
    {
       bool timedout;
-      evt.waitWithTimeout(monitorCfg.frequencyInMinutes*60*1000,timedout);
-      inmem::setState(&monitorCfg.heartbeatAwk,monitorCfg.heartbeat);
+      myEvt.waitWithTimeout(monitorCfg.frequencyInMinutes*60*1000,timedout);
 
       if(timedout)
       {
          if(inmem::setStateWhen(&monitorCfg.state,inmem::states::kStatus_Ready,
             inmem::states::kStatus_Staging,10))
          {
+            monitorCfg.lastAction = ::time(NULL);
+
             std::unique_ptr<std::wostream> pStream;
             if(monitorCfg.lastStageLogAbsolutePath[0])
                pStream.reset(new std::wofstream(monitorCfg.lastStageLogAbsolutePath));
@@ -57,6 +60,7 @@ void myMain()
       inmem::setState(&monitorCfg.state,inmem::states::kStatus_Ready);
    }
 
+   hbeat.join();
    monitorCfg.servicingProcessId = 0;
    inmem::setState(&monitorCfg.state,inmem::states::kStatus_Dead);
 }

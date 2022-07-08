@@ -79,16 +79,43 @@ void cmdStop(inmem::config& c)
    stop(c.backup);
 }
 
+static const wchar_t *gStatusNames[] = {
+   L"dead               ",
+   L"ready              ",
+   L"staging            ",
+   L"compacting         ",
+   L"cmd<Status>        ",
+   L"cmd<Die>           ",
+   L"cmd<Compact>       ",
+   L"cmd<Timestamps>    ",
+   L"cmd<Restore>       ",
+   L"cmd<Cull>          ",
+   L"cmd<PauseMonitor>  ",
+   L"cmd<UnpauseMonitor>",
+};
+
 static void status(inmem::heartbeatComms& c, const std::wstring& userName)
 {
-   std::wcout << userName << " - ";
+   std::wcout << L"[" << gStatusNames[c.state] << L"] ";
+
    long ans = ::InterlockedIncrement(&c.heartbeat);
    osEvent(inmem::getServicingProcessTxSignalName(c.servicingProcessId))
       .raise();
    if(!inmem::waitForState(&c.heartbeatAwk,ans,10))
-      std::wcout << L"doesn't seem responsive!!!!" << std::endl;
+      std::wcout << L"UNRESPONSIVE!! - ";
    else
-      std::wcout << L"responsive" << std::endl;
+      std::wcout << L"responsive     - ";
+
+   struct tm *pLt = ::localtime(&c.lastAction);
+   wchar_t buffer[] = L"   -- never --   ";
+   if(c.lastAction)
+      ::wcsftime(
+         buffer,
+         MAX_PATH,
+         L"%m/%d/%y %H:%M:%S",
+         pLt);
+
+   std::wcout << buffer << L" - " << userName << std::endl;
 }
 
 void cmdStatus(inmem::config& c)

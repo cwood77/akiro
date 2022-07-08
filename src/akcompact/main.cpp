@@ -15,12 +15,14 @@ void myMain()
       throw std::runtime_error("shmem not configured!");
 
    pShmem->backup.servicingProcessId = ::GetCurrentProcessId();
-   osEvent evt(inmem::getServicingProcessTxSignalName(pShmem->backup.servicingProcessId));
+   osEvent myEvt("");
+   heartbeatThread hbeat(pShmem->backup,myEvt);
+   hbeat.start();
    ::InterlockedExchange(&pShmem->backup.state,inmem::states::kStatus_Ready);
 
    while(true)
    {
-      evt.wait();
+      myEvt.wait();
       inmem::setState(&pShmem->backup.heartbeatAwk,pShmem->backup.heartbeat);
 
       // kCmd_Timestamps
@@ -37,6 +39,8 @@ void myMain()
          workerLogBinding _wb(writer);
          getWorkerLog() << L"compacting" << std::endl;
 #endif
+         pShmem->backup.lastAction = ::time(NULL);
+
          std::unique_ptr<std::wostream> pStream;
          if(pShmem->backup.lastCompactLogAbsolutePath[0])
             pStream.reset(new std::wofstream(pShmem->backup.lastCompactLogAbsolutePath));
@@ -61,6 +65,7 @@ void myMain()
       inmem::setState(&pShmem->backup.state,inmem::states::kStatus_Ready);
    }
 
+   hbeat.join();
    pShmem->backup.servicingProcessId = 0;
    inmem::setState(&pShmem->backup.state,inmem::states::kStatus_Dead);
 }

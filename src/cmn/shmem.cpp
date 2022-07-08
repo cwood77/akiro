@@ -1,3 +1,4 @@
+#include "shmem-block.hpp"
 #include "shmem.hpp"
 #include <stdexcept>
 
@@ -40,7 +41,7 @@ osEvent::osEvent(const std::string& name)
       NULL,
       FALSE, // auto
       FALSE, // unsignalled
-      name.c_str());
+      name.length() ? name.c_str() : NULL);
 }
 
 osEvent::~osEvent()
@@ -83,4 +84,51 @@ bool mutex::lock(DWORD timeoutInMs)
 void mutex::unlock()
 {
    ::ReleaseMutex(m_han);
+}
+
+heartbeatThread::heartbeatThread(inmem::heartbeatComms& cfg, osEvent& signal)
+: m_cfg(cfg)
+, m_shmemSignal(inmem::getServicingProcessTxSignalName(cfg.servicingProcessId))
+, m_signal(signal)
+, m_hThread(INVALID_HANDLE_VALUE)
+{
+}
+
+void heartbeatThread::start()
+{
+   m_hThread = ::CreateThread(
+      NULL, // lpThreadAttributes,
+      0,    // dwStackSize,
+      &_threadProcThunk,
+      this,
+      0,    // dwCreationFlags,
+      NULL  // lpThreadId
+   );
+}
+
+void heartbeatThread::join()
+{
+   ::WaitForSingleObject(m_hThread,INFINITE);
+   ::CloseHandle(m_hThread);
+}
+
+DWORD heartbeatThread::_threadProcThunk(LPVOID pParam)
+{
+   reinterpret_cast<heartbeatThread*>(pParam)->_threadProc();
+   return 0;
+}
+
+void heartbeatThread::_threadProc()
+{
+   while(true)
+   {
+      m_shmemSignal.wait();
+
+      m_signal.raise();
+
+      inmem::setState(&m_cfg.heartbeatAwk,m_cfg.heartbeat);
+
+      if(m_cfg.state == inmem::states::kCmd_Die)
+         return;
+   }
 }

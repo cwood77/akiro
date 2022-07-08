@@ -3,6 +3,8 @@
 #include <string>
 #include <windows.h>
 
+namespace inmem { class heartbeatComms; }
+
 class autoShmemBase {
 public:
    autoShmemBase(size_t size, const std::string& name);
@@ -37,6 +39,8 @@ public:
    void waitWithTimeout(DWORD timeoutInMs, bool& timedout);
    void raise();
 
+   HANDLE _getHandle() { return m_e; }
+
 private:
    HANDLE m_e;
 };
@@ -60,4 +64,21 @@ public:
 
 private:
    mutex& m_m;
+};
+
+class heartbeatThread {
+public:
+   heartbeatThread(inmem::heartbeatComms& cfg, osEvent& signal);
+
+   void start();
+   void join();
+
+private:
+   static DWORD _threadProcThunk(LPVOID pParam);
+   void _threadProc();
+
+   inmem::heartbeatComms& m_cfg;
+   osEvent m_shmemSignal;
+   osEvent& m_signal;
+   HANDLE m_hThread;
 };
