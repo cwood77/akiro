@@ -13,4 +13,4 @@ backup:
    # you can set this to zero to keep everything
    oldest-version-to-keep-in-days: 365
 
-   last-compact-log-absolute-path: C:\cygwin64\tmp\akiro_caompact.txt
+   last-compact-log-absolute-path: C:\cygwin64\tmp\akiro_compact.txt

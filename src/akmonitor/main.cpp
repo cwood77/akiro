@@ -29,20 +29,11 @@ void myMain()
    osEvent evt(inmem::getServicingProcessTxSignalName(monitorCfg.servicingProcessId));
    ::InterlockedExchange(&monitorCfg.state,inmem::states::kStatus_Ready);
 
-   bool once = true;
    while(true)
    {
       bool timedout;
       evt.waitWithTimeout(monitorCfg.frequencyInMinutes*60*1000,timedout);
       inmem::setState(&monitorCfg.heartbeatAwk,monitorCfg.heartbeat);
-
-      if(once)
-      {
-         timedout = true;
-         once = false;
-      }
-      else
-         timedout = false;
 
       if(timedout)
       {
