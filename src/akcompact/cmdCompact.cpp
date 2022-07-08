@@ -50,3 +50,11 @@ void cmdCompact(inmem::config& c)
       it->eraseOnDisk();
    }
 }
+
+void cmdTimestamps(inmem::config& c, const std::wstring& arg)
+{
+   rootDb rDb(c);
+   size_t key = rDb.lookupKey(arg);
+   treeDb tDb(c,key);
+   tDb.dump(getWorkerLog());
+}

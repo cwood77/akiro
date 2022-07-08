@@ -19,6 +19,7 @@ public:
    treeDb(inmem::config& c, size_t key);
 
    void add(time_t timestamp, treeListing& l);
+   void dump(std::wostream& s);
 
 private:
    static std::wstring format(time_t timestamp);

@@ -46,3 +46,12 @@ size_t rootDb::findOrAddKey(const std::wstring& monitorRoot)
 
    return noob;
 }
+
+size_t rootDb::lookupKey(const std::wstring& monitorRoot)
+{
+   auto it = m_table.find(monitorRoot);
+   if(it != m_table.end())
+      return it->second;
+   else
+      throw std::runtime_error("bad directory given");
+}

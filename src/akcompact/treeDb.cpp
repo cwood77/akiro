@@ -84,3 +84,11 @@ std::wstring treeDb::format(time_t timestamp)
 
    return buffer;
 }
+
+void treeDb::dump(std::wostream& s)
+{
+   s << L"the following timestamps are available = [" << std::endl;
+   for(auto timestamp : m_timestamps)
+      s << L"   " << timestamp << std::endl;
+   s << L"]" << std::endl;
+}

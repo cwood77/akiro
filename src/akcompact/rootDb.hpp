@@ -11,6 +11,7 @@ public:
    ~rootDb();
 
    size_t findOrAddKey(const std::wstring& monitorRoot);
+   size_t lookupKey(const std::wstring& monitorRoot);
 
 private:
    std::wstring m_path;

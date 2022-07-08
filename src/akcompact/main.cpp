@@ -1,5 +1,6 @@
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
+#include "../cmn/temp.hpp"
 #include "../cmn/wlog.hpp"
 #include "../cmn/worker.hpp"
 #include "cmdCompact.hpp"
@@ -25,20 +26,11 @@ void myMain()
       myEvt.wait();
       inmem::setState(&pShmem->backup.heartbeatAwk,pShmem->backup.heartbeat);
 
-      // kCmd_Timestamps
       // kCmd_Restore
       // kCmd_Cull
 
       if(pShmem->backup.state == inmem::states::kCmd_Compact)
       {
-#if 0
-         // try out temp files
-         auto path = reserveTempFilePath(L"compact");
-         ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
-         std::wofstream writer(path.c_str());
-         workerLogBinding _wb(writer);
-         getWorkerLog() << L"compacting" << std::endl;
-#endif
          pShmem->backup.lastAction = ::time(NULL);
 
          std::unique_ptr<std::wostream> pStream;
@@ -51,6 +43,25 @@ void myMain()
          try
          {
             cmdCompact(*pShmem);
+         }
+         catch(std::exception& x)
+         {
+            getWorkerLog() << L"ERROR:" << x.what() << std::endl;
+         }
+         getWorkerLog() << L"done" << std::endl;
+      }
+      else if(pShmem->backup.state == inmem::states::kCmd_Timestamps)
+      {
+         pShmem->backup.lastAction = ::time(NULL);
+
+         auto path = reserveTempFilePath(L"timestamps");
+         ::wcscpy(pShmem->backup.actionLogFile,path.c_str());
+         std::wofstream writer(path.c_str());
+         workerLogBinding _wb(writer);
+
+         try
+         {
+            cmdTimestamps(*pShmem,pShmem->backup.args[0]);
          }
          catch(std::exception& x)
          {

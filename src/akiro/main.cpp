@@ -1,3 +1,4 @@
+#include "../cmn/path.hpp"
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
 #include "cmdStartStopStatus.hpp"
@@ -18,6 +19,7 @@ int main(int argc, const char *argv[])
          std::wcout << L"  akiro start - start up monitoring" << std::endl;
          std::wcout << L"  akiro stop - shutdown monitoring" << std::endl;
          std::wcout << L"  akiro status - report monitoring status" << std::endl;
+         std::wcout << L"  akiro timestamps <dir> - list captured timestamps of dir" << std::endl;
          return 0;
       }
 
@@ -46,6 +48,12 @@ int main(int argc, const char *argv[])
          if(!pShmem.didExist())
             throw std::runtime_error("processes aren't running");
          cmdCompact(*pShmem);
+      }
+      else if(argc == 3 && argv[1] == std::string("timestamps"))
+      {
+         if(!pShmem.didExist())
+            throw std::runtime_error("processes aren't running");
+         cmdTimestamps(*pShmem,widen(argv[2]));
       }
       else
          throw std::runtime_error("bad usage");
