@@ -1,6 +1,7 @@
 #include "../cmn/shmem-block.hpp"
 #include "../cmn/shmem.hpp"
 #include "../cmn/worker.hpp"
+#include "cmdStage.hpp"
 #include <stdexcept>
 
 void myMain()
@@ -26,8 +27,14 @@ void myMain()
 
    while(true)
    {
-      evt.wait();
+      bool timedout;
+      evt.waitWithTimeout(monitorCfg.frequencyInMinutes*60*1000,timedout);
       inmem::setState(&monitorCfg.heartbeatAwk,monitorCfg.heartbeat);
+
+      if(timedout)
+         if(inmem::setStateWhen(&monitorCfg.state,inmem::states::kStatus_Ready,
+            inmem::states::kStatus_Staging,10))
+            cmdStage(*pShmem);
 
       if(monitorCfg.state == inmem::states::kCmd_Die)
          break;

@@ -138,6 +138,7 @@ $(AKCOMPACT_RELEASE_OBJ): $(OBJ_DIR)/release/%.o: src/%.cpp
 # akmonitor
 
 AKMONITOR_SRC = \
+	src/akmonitor/cmdStage.cpp \
 	src/akmonitor/main.cpp \
 
 AKMONITOR_DEBUG_OBJ = $(subst src,$(OBJ_DIR)/debug,$(patsubst %.cpp,%.o,$(AKMONITOR_SRC)))

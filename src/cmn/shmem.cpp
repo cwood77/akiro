@@ -53,6 +53,12 @@ void osEvent::wait()
    ::WaitForSingleObject(m_e,INFINITE);
 }
 
+void osEvent::waitWithTimeout(DWORD timeoutInMs, bool& timedout)
+{
+   DWORD rval = ::WaitForSingleObject(m_e,timeoutInMs);
+   timedout = (rval == WAIT_TIMEOUT);
+}
+
 void osEvent::raise()
 {
    ::SetEvent(m_e);

@@ -34,6 +34,7 @@ public:
    ~osEvent();
 
    void wait();
+   void waitWithTimeout(DWORD timeoutInMs, bool& timedout);
    void raise();
 
 private:

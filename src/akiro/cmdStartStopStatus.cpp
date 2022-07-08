@@ -41,7 +41,11 @@ void cmdStart(inmem::config& c)
          << monitorCfg.absolutePath
          << L"..."
          << std::endl;
-      start(monitorCfg,L"akmonitor.exe -r");
+
+      if(!fileExists(monitorCfg.absolutePath))
+         std::wcout << L"   ERROR - monitored path doesn't exist" << std::endl;
+      else
+         start(monitorCfg,L"akmonitor.exe -r");
    }
 }
 
@@ -61,7 +65,7 @@ void cmdStop(inmem::config& c)
    for(size_t i=0;i<kNumMonitors;i++)
    {
       auto& monitorCfg = c.monitors[i];
-      if(monitorCfg.frequencyInMinutes == 0) break;
+      if(monitorCfg.servicingProcessId == 0) break;
 
       std::wcout << L"stopping monitor " << i
          << L": "
@@ -92,7 +96,7 @@ void cmdStatus(inmem::config& c)
    for(size_t i=0;i<kNumMonitors;i++)
    {
       auto& monitorCfg = c.monitors[i];
-      if(monitorCfg.frequencyInMinutes == 0) break;
+      if(monitorCfg.servicingProcessId == 0) break;
       std::wstring name = L"monitor (";
       name += monitorCfg.absolutePath;
       name += L")";
