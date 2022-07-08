@@ -26,7 +26,7 @@ void copyFileSd(const std::wstring& source, const std::wstring& dest)
       throw std::runtime_error("copy failed");
 }
 
-std::wstring stripPath(const std::wstring& path)
+static std::wstring stripPath(const std::wstring& path)
 {
    std::size_t pos = path.rfind(L"\\");
    if(pos == std::wstring::npos)
@@ -48,4 +48,41 @@ void ensurePathExists(const std::wstring& path)
 void ensurePathForFileExists(const std::wstring& path)
 {
    ensurePathExists(stripPath(path));
+}
+
+void deleteFolderAndAllContents(const std::wstring& path)
+{
+   // delete the contents
+   WIN32_FIND_DATAW fData;
+   HANDLE hFind = ::FindFirstFileW((path + L"\\*").c_str(),&fData);
+   if(hFind != INVALID_HANDLE_VALUE)
+   {
+      do
+      {
+         if(fData.cFileName == std::wstring(L"."))
+            continue;
+         if(fData.cFileName == std::wstring(L".."))
+            continue;
+
+         std::wstring fullPath = path + L"\\" + fData.cFileName;
+
+         if(fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            deleteFolderAndAllContents(fullPath);
+         else
+         {
+            BOOL success = ::DeleteFileW(fullPath.c_str());
+            if(!success)
+               throw std::runtime_error("failed to delete file");
+         }
+      }
+      while(::FindNextFileW(hFind,&fData));
+      ::FindClose(hFind);
+   }
+
+   // delete this folder
+   {
+      BOOL success = ::RemoveDirectoryW(path.c_str());
+      if(!success)
+         throw std::runtime_error("failed to delete folder");
+   }
 }

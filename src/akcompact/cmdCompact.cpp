@@ -46,5 +46,7 @@ void cmdCompact(inmem::config& c)
 
       treeDb tDb(c,key);
       tDb.add(it->backupTime,listing);
+
+      it->eraseOnDisk();
    }
 }

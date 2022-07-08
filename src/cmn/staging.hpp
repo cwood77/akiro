@@ -18,7 +18,7 @@ public:
    time_t backupTime;
    std::wstring pathRoot;
 
-   void erase();
+   void eraseOnDisk();
 };
 
 std::list<stagingEntry> readStagingEntries(inmem::config& c);

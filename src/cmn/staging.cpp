@@ -1,6 +1,9 @@
 #include "../cmn/shmem-block.hpp"
+#include "file.hpp"
 #include "staging.hpp"
 #include <fstream>
+
+#include "wlog.hpp"
 
 std::list<stagingEntry> readStagingEntries(inmem::config& c)
 {
@@ -30,4 +33,15 @@ std::list<stagingEntry> readStagingEntries(inmem::config& c)
    ::FindClose(hFind);
 
    return rval;
+}
+
+void stagingEntry::eraseOnDisk()
+{
+   getWorkerLog() << L"removing stage " << pathRoot << std::endl;
+   {
+      BOOL success = ::DeleteFileW((pathRoot + L".txt").c_str());
+      if(!success)
+         throw std::runtime_error("failed to delete file");
+   }
+   deleteFolderAndAllContents(pathRoot);
 }
