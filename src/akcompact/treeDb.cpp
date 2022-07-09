@@ -9,7 +9,7 @@
 void treeListing::save(std::wostream& s)
 {
    for(auto it=files.begin();it!=files.end();++it)
-      s << it->second << L":" << it->first << std::endl;
+      s << (it->second.c_str()+basePath.length()) << L":" << it->first << std::endl;
 }
 
 void treeListing::load(std::wistream& s)
@@ -27,14 +27,14 @@ void treeListing::load(std::wistream& s)
 
       std::wstring hash(line.c_str(),iColon);
       std::wstring path(line.c_str()+iColon+1);
-      files[path] = hash;
+      files[basePath + path] = hash;
    }
 }
 
-void treeListing::elaborate(const std::wstring& basePath)
+void treeListing::elaborate(const std::wstring& bPath)
 {
    WIN32_FIND_DATAW fData;
-   HANDLE hFind = ::FindFirstFileW((basePath + L"\\*").c_str(),&fData);
+   HANDLE hFind = ::FindFirstFileW((bPath + L"\\*").c_str(),&fData);
    if(hFind == INVALID_HANDLE_VALUE)
       return;
    do
@@ -44,7 +44,7 @@ void treeListing::elaborate(const std::wstring& basePath)
       if(fData.cFileName == std::wstring(L".."))
          continue;
 
-      std::wstring fullPath = basePath + L"\\" + fData.cFileName;
+      std::wstring fullPath = bPath + L"\\" + fData.cFileName;
 
       if(fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
          elaborate(fullPath);
@@ -87,6 +87,7 @@ void treeDb::add(time_t timestamp, treeListing& l)
    std::wofstream file(fileName.c_str());
    if(!file.good())
       throw std::runtime_error("failed to write tree listing");
+   l.basePath = m_rootPath;
    l.save(file);
 }
 
@@ -117,5 +118,6 @@ void treeDb::load(const std::wstring& timestamp, treeListing& l)
    std::wifstream file((m_rootPath + L"\\" + timestamp).c_str());
    if(!file.good())
       throw std::runtime_error("timestamp file not found");
+   l.basePath = m_rootPath;
    l.load(file);
 }

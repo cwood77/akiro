@@ -8,6 +8,7 @@ namespace inmem { class config; }
 class treeListing {
 public:
    std::map<std::wstring,std::wstring> files;
+   std::wstring basePath;
 
    void save(std::wostream& s);
    void load(std::wistream& s);
