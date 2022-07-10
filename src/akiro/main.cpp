@@ -15,19 +15,30 @@ int main(int argc, const char *argv[])
       {
          std::wcout << L"usage: akiro [verb]" << std::endl;
          std::wcout << std::endl;
-         std::wcout << L"examples:" << std::endl;
+         std::wcout << L"common examples:" << std::endl;
          std::wcout << L"  akiro start - start up monitoring" << std::endl;
          std::wcout << L"  akiro stop - shutdown monitoring" << std::endl;
          std::wcout << L"  akiro status - report monitoring status" << std::endl;
+         std::wcout << std::endl;
          std::wcout << L"less common commands:" << std::endl;
-         std::wcout << L"  akiro timestamps <dir> - list captured timestamps of dir" << std::endl;
+         std::wcout << L"  akiro timestamps <monitordir> - list captured timestamps of dir" << std::endl;
          std::wcout << L"  akiro restore <monitordir> <timestamp> <dest>" << std::endl;
          std::wcout << L"    reconstruct <monitordir> as it was at <timestamp> in <dest>" << std::endl;
+         std::wcout << std::endl;
          std::wcout << L"testing and rare case examples:" << std::endl;
          std::wcout << L"  akiro stage - trigger an immediate stage of all monitors" << std::endl;
          std::wcout << L"  akiro compact - trigger an immediate compaction" << std::endl;
          std::wcout << L"  akiro prune - delete unreferenced archive data based on user" << std::endl;
          std::wcout << L"    changes to the root or tree db" << std::endl;
+
+         std::wcout << std::endl;
+         wchar_t buffer[100];
+         auto now = ::time(NULL);
+         struct tm *pLt = ::localtime(&now);
+         ::wcsftime(buffer,MAX_PATH,L"%Y%m%d-%H%M%S",pLt);
+         std::wcout << L"btw the current timestamp is " << buffer << std::endl;
+
+         std::wcout << L"btw view/edit configuration at " << exeAdjacentPath(L"akiro.txt") << std::endl;
          return 0;
       }
 

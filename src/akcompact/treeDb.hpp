@@ -17,6 +17,24 @@ public:
    void elaborate(const std::wstring& basePath);
 };
 
+class timestampBucket {
+public:
+   void configure(time_t now, inmem::retentionPolicy& c);
+
+   bool addIf(const std::wstring& timestamp);
+   void cull();
+   void rebuild(std::set<std::wstring>& s);
+};
+
+class timestampBucketer {
+public:
+   timestampBucketer(inmem::monitorConfig& c);
+
+   void add(std::set<std::wstring>& s);
+   void cull();
+   void rebuild(std::set<std::wstring>& s);
+};
+
 class treeDb {
 public:
    treeDb(inmem::config& c, size_t key);
@@ -27,6 +45,8 @@ public:
 
    static void deleteUnusedTrees(inmem::config& c, const std::set<size_t>& referencedKeys);
    void collectReferencedFiles(referencedHashList& keepers);
+
+   void cull(inmem::config&c, const std::wstring& monitorPath);
 
 private:
    static std::wstring format(time_t timestamp);

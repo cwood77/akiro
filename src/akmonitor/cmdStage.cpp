@@ -21,6 +21,12 @@ static void signalCompaction(inmem::config& c)
 
 void cmdStage(inmem::config& c, inmem::monitorConfig& mc)
 {
+   if(!mc.enabled)
+   {
+      getWorkerLog() << L"skipping stage b/c disabled" << std::endl;
+      return;
+   }
+
    stagingEntry e;
    {
       mutex m(inmem::getStagingOperationLockName());
@@ -28,6 +34,7 @@ void cmdStage(inmem::config& c, inmem::monitorConfig& mc)
       e = reserveStagingEntry(c);
    }
 
+   getWorkerLog() << L"reserved stage path " << e.pathRoot << std::endl;
    e.monitorPath = mc.absolutePath;
    e.backupTime = ::time(NULL);
    copyDiskTree(e.monitorPath,e.pathRoot,/*allowErrors*/true);

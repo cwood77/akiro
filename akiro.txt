@@ -1,20 +1,53 @@
-# you can make multiple monitor statements
+# generally, you should do 'akiro stop' and 'akiro start' whenever you
+# make changes here
+
+# you can have multiple monitor statements
 # monitoring is _always_ recursive to all subfolders, etc.
-# so don't put a monitor statement underneath another!
+# ...so don't put a monitor statement underneath another!
 monitor-absolute-path: C:\Users\cwood\Desktop\game12 - Alexander
+
+   # whether to actually monitor this path or not
+   # *** IMPORTANT ***: if you remove or comment out a monitor clause
+   # you previously had, then akiro may remove it's backup data.  If
+   # instead you want to disable new backups but still keep the old ones,
+   # then set 'enabled' to 'false' rather than removing the monitor
+   enabled: true
+
+   # 0 is an illegal value
    frequency-in-minutes: 5
+
+   # optional log path for staging operations... omit if you don't want it
    last-stage-log-absolute-path: C:\cygwin64\tmp\akiro_stage_alex.txt
 
+   # retention policies keep akiro from accumulating data forever
+   # the first matching policy is executed, so list them in descending order
+   retention-policy:
+      older-than-in-days: 365
+      keep-at-most-timestamps: 0
+   retention-policy:
+      older-than-in-days: 30
+      keep-at-most-timestamps: 1
+   retention-policy:
+      older-than-in-days: 14
+      keep-at-most-timestamps: 3
+   retention-policy:
+      older-than-in-days: 3
+      keep-at-most-timestamps: 7
+
 monitor-absolute-path: C:\Users\cwood\Desktop\game11
+   enabled: true
    frequency-in-minutes: 5
    last-stage-log-absolute-path: C:\cygwin64\tmp\akiro_stage_g11.txt
+   retention-policy: same-as-last-monitor
 
-# There is only one backup statement
+# There is only one backup statement (which is generally required)
 backup:
+   # akiro writes lots of stuff here, so make sure there's plenty of room,
+   # and ideally, that the path is short
    absolute-path: C:\akiro-archive
 
-   # you can set this to zero to keep everything
-   oldest-version-to-keep-in-days: 365
+   enforce-retention-frequency-in-days: 1
 
+   # optional log paths for various operations... omit if you don't want it
    last-compact-log-absolute-path: C:\cygwin64\tmp\akiro_compact.txt
    last-prune-log-absolute-path: C:\cygwin64\tmp\akiro_prune.txt

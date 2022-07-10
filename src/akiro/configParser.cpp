@@ -1,5 +1,6 @@
 #include "../cmn/shmem-block.hpp"
 #include "configParser.hpp"
+#include <iostream>
 
 void configParser::load(std::wistream& s, inmem::config& c)
 {
@@ -25,12 +26,42 @@ void configParser::parseLine(const std::wstring& line)
 
    if(*pThumb=='#') return; // discard comments
 
+   if(m_state == kRPolicy)
+   {
+      if(startsWithAndAdvance(pThumb,L"older-than-in-days: "))
+         ::swscanf(pThumb,L"%lld",
+            &m_config.monitors[m_iMonitor].rpolicy[m_iRPolicy].olderThanInDays);
+      else if(startsWithAndAdvance(pThumb,L"keep-at-most-timestamps: "))
+         ::swscanf(pThumb,L"%lld",
+            &m_config.monitors[m_iMonitor].rpolicy[m_iRPolicy].keepMax);
+      else
+         closeState();
+   }
+
    if(m_state == kMonitor)
    {
       if(startsWithAndAdvance(pThumb,L"frequency-in-minutes: "))
          ::swscanf(pThumb,L"%lld",&m_config.monitors[m_iMonitor].frequencyInMinutes);
       else if(startsWithAndAdvance(pThumb,L"last-stage-log-absolute-path: "))
          ::wcscpy(m_config.monitors[m_iMonitor].lastStageLogAbsolutePath,pThumb);
+      else if(startsWithAndAdvance(pThumb,L"enabled: true"))
+         m_config.monitors[m_iMonitor].enabled = true;
+      else if(startsWithAndAdvance(pThumb,L"enabled: false"))
+         m_config.monitors[m_iMonitor].enabled = false;
+      else if(::wcscmp(pThumb,L"retention-policy:")==0)
+      {
+         m_state = kRPolicy;
+         m_iRPolicy = 0;
+      }
+      else if(::wcscmp(pThumb,L"retention-policy: same-as-last-monitor")==0)
+      {
+         if(m_iMonitor == 0)
+            throw std::runtime_error("used 'same-as-last-monitor' on first monitor!");
+         ::memcpy(
+            m_config.monitors[m_iMonitor].rpolicy,
+            m_config.monitors[m_iMonitor-1].rpolicy,
+            sizeof(inmem::retentionPolicy)*10);
+      }
       else
          closeState();
    }
@@ -38,8 +69,8 @@ void configParser::parseLine(const std::wstring& line)
    {
       if(startsWithAndAdvance(pThumb,L"absolute-path: "))
          ::wcscpy(m_config.backup.absolutePath,pThumb);
-      else if(startsWithAndAdvance(pThumb,L"oldest-version-to-keep-in-days: "))
-         ::swscanf(pThumb,L"%lld",&m_config.backup.oldestVersionToKeepInDays);
+      else if(startsWithAndAdvance(pThumb,L"enforce-retention-frequency-in-days: "))
+         ::swscanf(pThumb,L"%lld",&m_config.backup.retentionFrequencyInDays);
       else if(startsWithAndAdvance(pThumb,L"last-compact-log-absolute-path: "))
          ::wcscpy(m_config.backup.lastCompactLogAbsolutePath,pThumb);
       else if(startsWithAndAdvance(pThumb,L"last-cull-log-absolute-path: "))
@@ -63,7 +94,10 @@ void configParser::parseLine(const std::wstring& line)
       else if(::wcscmp(pThumb,L"backup:")==0)
          m_state = kBackup;
       else
+      {
+         std::wcout << L"error on: '" << pThumb << L"'" << std::endl;
          throw std::runtime_error("bad line in config file");
+      }
    }
 }
 
@@ -80,6 +114,15 @@ bool configParser::startsWithAndAdvance(const wchar_t*& pThumb, const wchar_t *p
 
 void configParser::closeState()
 {
+   if(m_state == kRPolicy)
+   {
+      if(m_config.monitors[m_iMonitor].rpolicy[m_iRPolicy].olderThanInDays == 0)
+         throw std::runtime_error("older-than-in-days must be nonzero in config file");
+      m_iRPolicy++;
+      m_state = kMonitor;
+      return;
+   }
+
    if(m_state == kMonitor)
    {
       if(m_config.monitors[m_iMonitor].frequencyInMinutes == 0)

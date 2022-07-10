@@ -75,7 +75,7 @@ void cmdStop(inmem::config& c)
       stop(monitorCfg);
    }
 
-   std::wcout << L"shutting down backup..." << std::endl;
+   std::wcout << L"stopping backup..." << std::endl;
    stop(c.backup);
 }
 
@@ -125,7 +125,12 @@ void cmdStatus(inmem::config& c)
    {
       auto& monitorCfg = c.monitors[i];
       if(monitorCfg.servicingProcessId == 0) break;
-      std::wstring name = L"monitor (";
+      std::wstring name = L"monitor ";
+      if(monitorCfg.enabled)
+         name += L"[on] ";
+      else
+         name += L"[off] ";
+      name += L" (";
       name += monitorCfg.absolutePath;
       name += L")";
       status(monitorCfg,name);

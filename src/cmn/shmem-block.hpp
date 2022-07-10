@@ -33,15 +33,22 @@ struct heartbeatComms {
    long heartbeatAwk;
 };
 
+struct retentionPolicy {
+   time_t olderThanInDays;
+   size_t keepMax;
+};
+
 struct monitorConfig : public heartbeatComms{
    wchar_t absolutePath[MAX_PATH];
    size_t frequencyInMinutes;
    wchar_t lastStageLogAbsolutePath[MAX_PATH];
+   bool enabled;
+   retentionPolicy rpolicy[10];
 };
 
 struct backupConfig : public heartbeatComms {
    wchar_t absolutePath[MAX_PATH];
-   size_t oldestVersionToKeepInDays;
+   size_t retentionFrequencyInDays;
    wchar_t lastCompactLogAbsolutePath[MAX_PATH];
    wchar_t lastCullLogAbsolutePath[MAX_PATH];
    wchar_t lastPruneLogAbsolutePath[MAX_PATH];
@@ -58,8 +65,6 @@ struct config {
 inline std::string getMasterShmemName() { return "cdwe_akiro_shmem"; }
 inline std::string getStagingOperationLockName() { return "cdwe_akiro_shlock"; }
 extern std::string getServicingProcessTxSignalName(unsigned long pid);
-extern std::string getServicingProcessRxSignalName(unsigned long pid);
-extern std::string getServicingProcessHeartbeatSignalName(unsigned long pid);
 
 extern void setState(long *state, long desired);
 extern bool setStateWhen(long *state, long precondition, long desired, unsigned long timeout);

@@ -56,6 +56,7 @@ void cmdTimestamps(inmem::config& c, const std::wstring& arg)
 {
    rootDb rDb(c);
    size_t key = rDb.lookupKey(arg);
+   getWorkerLog() << L"path '" << arg << L"' is root key " << key << std::endl;
    treeDb tDb(c,key);
    tDb.dump(getWorkerLog());
 }
