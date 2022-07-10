@@ -17,3 +17,4 @@ backup:
    oldest-version-to-keep-in-days: 365
 
    last-compact-log-absolute-path: C:\cygwin64\tmp\akiro_compact.txt
+   last-prune-log-absolute-path: C:\cygwin64\tmp\akiro_prune.txt

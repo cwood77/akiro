@@ -43,6 +43,8 @@ struct backupConfig : public heartbeatComms {
    wchar_t absolutePath[MAX_PATH];
    size_t oldestVersionToKeepInDays;
    wchar_t lastCompactLogAbsolutePath[MAX_PATH];
+   wchar_t lastCullLogAbsolutePath[MAX_PATH];
+   wchar_t lastPruneLogAbsolutePath[MAX_PATH];
 
    wchar_t args[3][MAX_PATH];
    wchar_t actionLogFile[MAX_PATH];

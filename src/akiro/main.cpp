@@ -23,9 +23,11 @@ int main(int argc, const char *argv[])
          std::wcout << L"  akiro timestamps <dir> - list captured timestamps of dir" << std::endl;
          std::wcout << L"  akiro restore <monitordir> <timestamp> <dest>" << std::endl;
          std::wcout << L"    reconstruct <monitordir> as it was at <timestamp> in <dest>" << std::endl;
-         std::wcout << L"testing examples:" << std::endl;
+         std::wcout << L"testing and rare case examples:" << std::endl;
          std::wcout << L"  akiro stage - trigger an immediate stage of all monitors" << std::endl;
          std::wcout << L"  akiro compact - trigger an immediate compaction" << std::endl;
+         std::wcout << L"  akiro prune - delete unreferenced archive data based on user" << std::endl;
+         std::wcout << L"    changes to the root or tree db" << std::endl;
          return 0;
       }
 
@@ -77,6 +79,12 @@ int main(int argc, const char *argv[])
          if(!pShmem.didExist())
             throw std::runtime_error("processes aren't running");
          cmdCompact(*pShmem);
+      }
+      else if(argc == 2 && argv[1] == std::string("prune"))
+      {
+         if(!pShmem.didExist())
+            throw std::runtime_error("processes aren't running");
+         cmdPrune(*pShmem);
       }
 
       else

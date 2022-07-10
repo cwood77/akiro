@@ -4,6 +4,7 @@
 #include <string>
 
 namespace inmem { class config; }
+class referencedHashList;
 
 class treeListing {
 public:
@@ -23,6 +24,9 @@ public:
    void add(time_t timestamp, treeListing& l);
    void dump(std::wostream& s);
    void load(const std::wstring& timestamp, treeListing& l);
+
+   static void deleteUnusedTrees(inmem::config& c, const std::set<size_t>& referencedKeys);
+   void collectReferencedFiles(referencedHashList& keepers);
 
 private:
    static std::wstring format(time_t timestamp);

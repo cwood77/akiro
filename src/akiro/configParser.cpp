@@ -42,6 +42,10 @@ void configParser::parseLine(const std::wstring& line)
          ::swscanf(pThumb,L"%lld",&m_config.backup.oldestVersionToKeepInDays);
       else if(startsWithAndAdvance(pThumb,L"last-compact-log-absolute-path: "))
          ::wcscpy(m_config.backup.lastCompactLogAbsolutePath,pThumb);
+      else if(startsWithAndAdvance(pThumb,L"last-cull-log-absolute-path: "))
+         ::wcscpy(m_config.backup.lastCullLogAbsolutePath,pThumb);
+      else if(startsWithAndAdvance(pThumb,L"last-prune-log-absolute-path: "))
+         ::wcscpy(m_config.backup.lastPruneLogAbsolutePath,pThumb);
       else
          closeState();
    }

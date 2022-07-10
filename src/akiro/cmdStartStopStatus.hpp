@@ -12,3 +12,4 @@ void cmdRestore(inmem::config& c, const std::wstring& dir, const std::wstring& t
 
 void cmdStage(inmem::config& c);
 void cmdCompact(inmem::config& c);
+void cmdPrune(inmem::config& c);

@@ -172,6 +172,8 @@ static void stage(inmem::heartbeatComms& c)
       10,"waiting for backup to idle");
    osEvent(inmem::getServicingProcessTxSignalName(c.servicingProcessId))
       .raise();
+
+   std::wcout << L"operation is running the background; use akiro status if you want to monitor it" << std::endl;
 }
 
 void cmdStage(inmem::config& c)
@@ -191,4 +193,17 @@ void cmdCompact(inmem::config& c)
       10,"waiting for backup to idle");
    osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
       .raise();
+
+   std::wcout << L"operation is running the background; use akiro status if you want to monitor it" << std::endl;
+}
+
+void cmdPrune(inmem::config& c)
+{
+   inmem::setStateWhen(&c.backup.state,inmem::states::kStatus_Ready,
+      inmem::states::kCmd_Prune,
+      10,"waiting for backup to idle");
+   osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
+      .raise();
+
+   std::wcout << L"operation is running the background; use akiro status if you want to monitor it" << std::endl;
 }

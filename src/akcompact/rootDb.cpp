@@ -1,4 +1,5 @@
 #include "../cmn/shmem-block.hpp"
+#include "../cmn/wlog.hpp"
 #include "rootDb.hpp"
 #include <fstream>
 
@@ -54,4 +55,44 @@ size_t rootDb::lookupKey(const std::wstring& monitorRoot)
       return it->second;
    else
       throw std::runtime_error("bad directory given");
+}
+
+void rootDb::deleteUnusedRoots(inmem::config& c)
+{
+   std::set<std::wstring> keepers;
+   for(size_t i=0;i<kNumMonitors;i++)
+   {
+      auto& monitorCfg = c.monitors[i];
+      if(monitorCfg.frequencyInMinutes == 0) break;
+
+      auto it = m_table.find(monitorCfg.absolutePath);
+      if(it!=m_table.end())
+         keepers.insert(it->first);
+   }
+
+   if(keepers.size() == m_table.size())
+   {
+      getWorkerLog() << L"no unused roots found" << std::endl;
+      return;
+   }
+
+   auto tableCopy = m_table;
+   m_table.clear();
+   m_usedIds.clear();
+   for(auto it=tableCopy.begin();it!=tableCopy.end();++it)
+   {
+      if(keepers.find(it->first)!=keepers.end())
+      {
+         getWorkerLog() << L"retaining root " << it->first << std::endl;
+         m_table[it->first] = it->second;
+         m_usedIds.insert(it->second);
+         continue;
+      }
+
+      getWorkerLog()
+         << L"root "
+         << it->first
+         << L" (" << it->second << L")"
+         << L" no longer referenced" << std::endl;
+   }
 }

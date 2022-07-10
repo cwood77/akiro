@@ -1,6 +1,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include "../cmn/file.hpp"
 #include "../cmn/shmem-block.hpp"
+#include "../cmn/wlog.hpp"
+#include "fileDb.hpp"
 #include "treeDb.hpp"
 #include "windows.h"
 #include <fstream>
@@ -91,20 +93,6 @@ void treeDb::add(time_t timestamp, treeListing& l)
    l.save(file);
 }
 
-std::wstring treeDb::format(time_t timestamp)
-{
-   struct tm *pLt = ::localtime(&timestamp);
-
-   wchar_t buffer[MAX_PATH];
-   ::wcsftime(
-      buffer,
-      MAX_PATH,
-      L"%Y%m%d-%H%M%S",
-      pLt);
-
-   return buffer;
-}
-
 void treeDb::dump(std::wostream& s)
 {
    s << L"the following timestamps are available = [" << std::endl;
@@ -120,4 +108,59 @@ void treeDb::load(const std::wstring& timestamp, treeListing& l)
       throw std::runtime_error("timestamp file not found");
    l.basePath = m_rootPath;
    l.load(file);
+}
+
+void treeDb::deleteUnusedTrees(inmem::config& c, const std::set<size_t>& referencedKeys)
+{
+   std::wstringstream stream;
+   stream << c.backup.absolutePath << L"\\t";
+   std::wstring rootPath = stream.str();
+
+   WIN32_FIND_DATAW fData;
+   HANDLE hFind = ::FindFirstFileW((rootPath + L"\\*").c_str(),&fData);
+   if(hFind == INVALID_HANDLE_VALUE)
+   {
+      getWorkerLog() << L"no trees at all!" << std::endl;
+      return;
+   }
+   do
+   {
+      if(fData.cFileName == std::wstring(L".")) continue;
+      if(fData.cFileName == std::wstring(L"..")) continue;
+
+      size_t key = 0;
+      ::swscanf(fData.cFileName,L"%lld",&key);
+      if(referencedKeys.find(key) == referencedKeys.end())
+      {
+         getWorkerLog() << L"deleting all trees for key " << key << std::endl;
+         deleteFolderAndAllContents(rootPath + L"\\" + fData.cFileName);
+      }
+   }
+   while(::FindNextFileW(hFind,&fData));
+   ::FindClose(hFind);
+}
+
+void treeDb::collectReferencedFiles(referencedHashList& keepers)
+{
+   for(auto ts : m_timestamps)
+   {
+      treeListing l;
+      load(ts,l);
+      for(auto it=l.files.begin();it!=l.files.end();++it)
+         keepers.add(it->second);
+   }
+}
+
+std::wstring treeDb::format(time_t timestamp)
+{
+   struct tm *pLt = ::localtime(&timestamp);
+
+   wchar_t buffer[MAX_PATH];
+   ::wcsftime(
+      buffer,
+      MAX_PATH,
+      L"%Y%m%d-%H%M%S",
+      pLt);
+
+   return buffer;
 }

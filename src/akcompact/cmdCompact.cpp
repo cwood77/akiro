@@ -83,3 +83,27 @@ void cmdRestore(inmem::config& c, const std::wstring& dir, const std::wstring& t
          throw std::runtime_error("copy failed");
    }
 }
+
+void cmdPrune(inmem::config& c)
+{
+   getWorkerLog() << L"beginning prune..." << std::endl;
+
+   rootDb rDb(c);
+   rDb.deleteUnusedRoots(c);
+
+   auto referencedKeys = rDb.getKeys();
+   treeDb::deleteUnusedTrees(c,referencedKeys);
+
+   referencedHashList referencedFiles;
+   for(auto key : referencedKeys)
+   {
+      getWorkerLog() << L"cataloging tree key " << key << L"..." << std::endl;
+      treeDb tDb(c,key);
+      tDb.collectReferencedFiles(referencedFiles);
+   }
+
+   fileDb fDb(c);
+   fDb.deleteUnusedFiles(referencedFiles);
+
+   getWorkerLog() << L"prune complete" << std::endl;
+}

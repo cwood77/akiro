@@ -26,6 +26,44 @@ std::wstring fileDb::addOrFetch(const std::wstring& path)
    return hash;
 }
 
+void fileDb::deleteUnusedFiles(referencedHashList& keepers)
+{
+   WIN32_FIND_DATAW fData;
+   HANDLE hFind = ::FindFirstFileW((m_dbRootPath + L"\\*").c_str(),&fData);
+   if(hFind == INVALID_HANDLE_VALUE)
+   {
+      getWorkerLog() << L"no files?" << std::endl;
+   }
+   size_t kept = 0;
+   size_t killed = 0;
+   do
+   {
+      if(fData.cFileName == std::wstring(L"."))
+         continue;
+      if(fData.cFileName == std::wstring(L".."))
+         continue;
+
+      std::wstring fullPath = m_dbRootPath + L"\\" + fData.cFileName;
+
+      if(!keepers.isPresent(fullPath))
+      {
+         getWorkerLog() << L"deleting unused file " << fData.cFileName << std::endl;
+         killed++;
+         BOOL success = ::DeleteFileW(fullPath.c_str());
+         if(!success)
+            throw std::runtime_error("error deleting file?!");
+      }
+      else
+         kept++;
+   }
+   while(::FindNextFileW(hFind,&fData));
+   ::FindClose(hFind);
+
+   getWorkerLog() << std::endl;
+   getWorkerLog() << L"kept " << kept << L" file(s)" << std::endl;
+   getWorkerLog() << L"deleted " << killed << L" file(s)" << std::endl;
+}
+
 std::wstring fileDb::computeHash(const std::wstring& path)
 {
    md5Hasher hasher(m_ctxt);

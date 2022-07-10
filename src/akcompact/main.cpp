@@ -81,6 +81,25 @@ void myMain()
          }
          getWorkerLog() << L"done" << std::endl;
       }
+      if(pShmem->backup.state == inmem::states::kCmd_Prune)
+      {
+         std::unique_ptr<std::wostream> pStream;
+         if(pShmem->backup.lastPruneLogAbsolutePath[0])
+            pStream.reset(new std::wofstream(pShmem->backup.lastPruneLogAbsolutePath));
+         else
+            pStream.reset(new std::wstringstream());
+         workerLogBinding _wb(*pStream.get());
+
+         try
+         {
+            cmdPrune(*pShmem);
+         }
+         catch(std::exception& x)
+         {
+            getWorkerLog() << L"ERROR:" << x.what() << std::endl;
+         }
+         getWorkerLog() << L"done" << std::endl;
+      }
 
       if(pShmem->backup.state == inmem::states::kCmd_Die)
          break;
