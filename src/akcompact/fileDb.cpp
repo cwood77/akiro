@@ -45,7 +45,7 @@ void fileDb::deleteUnusedFiles(referencedHashList& keepers)
 
       std::wstring fullPath = m_dbRootPath + L"\\" + fData.cFileName;
 
-      if(!keepers.isPresent(fullPath))
+      if(!keepers.isPresent(fData.cFileName))
       {
          getWorkerLog() << L"deleting unused file " << fData.cFileName << std::endl;
          killed++;
