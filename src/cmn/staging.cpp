@@ -8,11 +8,16 @@
 
 void stagingEntry::save()
 {
-   std::wofstream file((pathRoot + L".txt").c_str());
-   if(!file.good())
-      throw std::runtime_error("can't save staging file");
-   file << monitorPath << std::endl;
-   file << backupTime << std::endl;
+   {
+      std::wofstream file((pathRoot + L"._txt").c_str());
+      if(!file.good())
+         throw std::runtime_error("can't save staging file");
+      file << monitorPath << std::endl;
+      file << backupTime << std::endl;
+   }
+   ::MoveFileW(
+      (pathRoot + L"._txt").c_str(),
+      (pathRoot + L".txt").c_str());
 }
 
 void stagingEntry::eraseOnDisk()
@@ -61,13 +66,16 @@ stagingEntry reserveStagingEntry(inmem::config& c)
    std::set<size_t> usedIds;
    std::wstring stagingPath = std::wstring(c.backup.absolutePath) + L"\\s";
    WIN32_FIND_DATAW fData;
-   HANDLE hFind = ::FindFirstFileW((stagingPath + L"\\*.txt").c_str(),&fData);
+   HANDLE hFind = ::FindFirstFileW((stagingPath + L"\\*").c_str(),&fData);
    if(hFind != INVALID_HANDLE_VALUE)
    {
       do
       {
          if(fData.cFileName == std::wstring(L".")) continue;
          if(fData.cFileName == std::wstring(L"..")) continue;
+
+         if((fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)==0)
+            continue;
 
          size_t id = 0;
          ::swscanf(fData.cFileName,L"%lld",&id);
