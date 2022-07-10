@@ -19,14 +19,19 @@ int main(int argc, const char *argv[])
          std::wcout << L"  akiro start - start up monitoring" << std::endl;
          std::wcout << L"  akiro stop - shutdown monitoring" << std::endl;
          std::wcout << L"  akiro status - report monitoring status" << std::endl;
+         std::wcout << L"less common commands:" << std::endl;
          std::wcout << L"  akiro timestamps <dir> - list captured timestamps of dir" << std::endl;
          std::wcout << L"  akiro restore <monitordir> <timestamp> <dest>" << std::endl;
          std::wcout << L"    reconstruct <monitordir> as it was at <timestamp> in <dest>" << std::endl;
+         std::wcout << L"testing examples:" << std::endl;
+         std::wcout << L"  akiro stage - trigger an immediate stage of all monitors" << std::endl;
+         std::wcout << L"  akiro compact - trigger an immediate compaction" << std::endl;
          return 0;
       }
 
       autoShmem<inmem::config> pShmem(inmem::getMasterShmemName());
 
+      // common ---------------------
       if(argc == 2 && argv[1] == std::string("start"))
       {
          if(pShmem.didExist())
@@ -45,12 +50,8 @@ int main(int argc, const char *argv[])
             throw std::runtime_error("processes aren't running");
          cmdStatus(*pShmem);
       }
-      else if(argc == 2 && argv[1] == std::string("compact"))
-      {
-         if(!pShmem.didExist())
-            throw std::runtime_error("processes aren't running");
-         cmdCompact(*pShmem);
-      }
+
+      // advanced ---------------------
       else if(argc == 3 && argv[1] == std::string("timestamps"))
       {
          if(!pShmem.didExist())
@@ -63,6 +64,21 @@ int main(int argc, const char *argv[])
             throw std::runtime_error("processes aren't running");
          cmdRestore(*pShmem,widen(argv[2]),widen(argv[3]),widen(argv[4]));
       }
+
+      // advanced ---------------------
+      else if(argc == 2 && argv[1] == std::string("stage"))
+      {
+         if(!pShmem.didExist())
+            throw std::runtime_error("processes aren't running");
+         cmdStage(*pShmem);
+      }
+      else if(argc == 2 && argv[1] == std::string("compact"))
+      {
+         if(!pShmem.didExist())
+            throw std::runtime_error("processes aren't running");
+         cmdCompact(*pShmem);
+      }
+
       else
          throw std::runtime_error("bad usage");
 

@@ -9,7 +9,7 @@
 void treeListing::save(std::wostream& s)
 {
    for(auto it=files.begin();it!=files.end();++it)
-      s << (it->second.c_str()+basePath.length()) << L":" << it->first << std::endl;
+      s << it->second << L":" << (it->first.c_str()+basePath.length()) << std::endl;
 }
 
 void treeListing::load(std::wistream& s)

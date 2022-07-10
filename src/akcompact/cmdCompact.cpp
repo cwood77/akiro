@@ -70,10 +70,10 @@ void cmdRestore(inmem::config& c, const std::wstring& dir, const std::wstring& t
    tDb.load(timestamp,l);
    for(auto it=l.files.begin();it!=l.files.end();++it)
    {
-      getWorkerLog() << L"using " << it->second << L" for " << it->first;
-
       std::wstring src = std::wstring(c.backup.absolutePath) + L"\\f\\" + it->second;
-      std::wstring dst = dest + L"\\" + it->first;
+      std::wstring dst = dest + (it->first.c_str() + l.basePath.length());
+
+      getWorkerLog() << L"using " << src << L" for " << dst << std::endl;
       ensurePathForFileExists(dst);
       BOOL success = ::CopyFileW(
          src.c_str(),

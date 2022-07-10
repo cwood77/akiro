@@ -11,8 +11,6 @@ namespace states {
    enum type {
       kStatus_Dead,
       kStatus_Ready,
-      kStatus_Staging,
-      kStatus_Compacting,
 
       kCmd_Status,
       kCmd_Die,
@@ -20,6 +18,8 @@ namespace states {
       kCmd_Timestamps,
       kCmd_Restore,
       kCmd_Cull,
+      kCmd_Prune,
+      kCmd_Stage,
       kCmd_PauseMonitor,
       kCmd_UnpauseMonitor,
    };

@@ -80,18 +80,19 @@ void cmdStop(inmem::config& c)
 }
 
 static const wchar_t *gStatusNames[] = {
-   L"dead               ",
-   L"ready              ",
-   L"staging            ",
-   L"compacting         ",
-   L"cmd<Status>        ",
-   L"cmd<Die>           ",
-   L"cmd<Compact>       ",
-   L"cmd<Timestamps>    ",
-   L"cmd<Restore>       ",
-   L"cmd<Cull>          ",
-   L"cmd<PauseMonitor>  ",
-   L"cmd<UnpauseMonitor>",
+   L"dead         ",
+   L"ready        ",
+
+   L"status       ",
+   L"shutting down",
+   L"compacting   ",
+   L"timestamps   ",
+   L"restoring    ",
+   L"culling      ",
+   L"pruning      ",
+   L"staging      ",
+   L"paused       ",
+   L"unpaused     ",
 };
 
 static void status(inmem::heartbeatComms& c, const std::wstring& userName)
@@ -133,17 +134,6 @@ void cmdStatus(inmem::config& c)
    status(c.backup,L"compactor");
 }
 
-void cmdCompact(inmem::config& c)
-{
-   inmem::setStateWhen(&c.backup.state,inmem::states::kStatus_Ready,
-      inmem::states::kCmd_Compact,
-      10,"timeout telling backup to compact");
-   osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
-      .raise();
-   inmem::waitForState(&c.backup.state,inmem::states::kStatus_Ready,
-      10,"timeout waiting for akcompact EXE");
-}
-
 void cmdTimestamps(inmem::config& c, const std::wstring& dir)
 {
    inmem::setStateWhen(&c.backup.state,inmem::states::kStatus_Ready,
@@ -168,8 +158,37 @@ void cmdRestore(inmem::config& c, const std::wstring& dir, const std::wstring& t
    ::wcscpy(c.backup.args[2],dest.c_str());
    osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
       .raise();
+   std::wcout << L"this could take awhile" << std::endl;
    inmem::waitForState(&c.backup.state,inmem::states::kStatus_Ready,
-      10,"timeout waiting for akcompact EXE");
+      7*60,"timeout waiting for akcompact EXE");
 
    dumpAndDestroyTempFile(c.backup.actionLogFile);
+}
+
+static void stage(inmem::heartbeatComms& c)
+{
+   inmem::setStateWhen(&c.state,inmem::states::kStatus_Ready,
+      inmem::states::kCmd_Stage,
+      10,"waiting for backup to idle");
+   osEvent(inmem::getServicingProcessTxSignalName(c.servicingProcessId))
+      .raise();
+}
+
+void cmdStage(inmem::config& c)
+{
+   for(size_t i=0;i<kNumMonitors;i++)
+   {
+      auto& monitorCfg = c.monitors[i];
+      if(monitorCfg.servicingProcessId == 0) break;
+      stage(monitorCfg);
+   }
+}
+
+void cmdCompact(inmem::config& c)
+{
+   inmem::setStateWhen(&c.backup.state,inmem::states::kStatus_Ready,
+      inmem::states::kCmd_Compact,
+      10,"waiting for backup to idle");
+   osEvent(inmem::getServicingProcessTxSignalName(c.backup.servicingProcessId))
+      .raise();
 }

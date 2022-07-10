@@ -37,21 +37,21 @@ void myMain()
       myEvt.waitWithTimeout(monitorCfg.frequencyInMinutes*60*1000,timedout);
 
       if(timedout)
+         inmem::setStateWhen(&monitorCfg.state,inmem::states::kStatus_Ready,
+            inmem::states::kCmd_Stage,10);
+
+      if(monitorCfg.state == inmem::states::kCmd_Stage)
       {
-         if(inmem::setStateWhen(&monitorCfg.state,inmem::states::kStatus_Ready,
-            inmem::states::kStatus_Staging,10))
-         {
-            monitorCfg.lastAction = ::time(NULL);
+         monitorCfg.lastAction = ::time(NULL);
 
-            std::unique_ptr<std::wostream> pStream;
-            if(monitorCfg.lastStageLogAbsolutePath[0])
-               pStream.reset(new std::wofstream(monitorCfg.lastStageLogAbsolutePath));
-            else
-               pStream.reset(new std::wstringstream());
-            workerLogBinding _wb(*pStream.get());
+         std::unique_ptr<std::wostream> pStream;
+         if(monitorCfg.lastStageLogAbsolutePath[0])
+            pStream.reset(new std::wofstream(monitorCfg.lastStageLogAbsolutePath));
+         else
+            pStream.reset(new std::wstringstream());
+         workerLogBinding _wb(*pStream.get());
 
-            cmdStage(*pShmem,monitorCfg);
-         }
+         cmdStage(*pShmem,monitorCfg);
       }
 
       if(monitorCfg.state == inmem::states::kCmd_Die)

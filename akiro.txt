@@ -1,10 +1,13 @@
-
 # you can make multiple monitor statements
 # monitoring is _always_ recursive to all subfolders, etc.
 # so don't put a monitor statement underneath another!
-monitor-absolute-path: C:\Users\cwood\Desktop
+monitor-absolute-path: C:\Users\cwood\Desktop\game12 - Alexander
    frequency-in-minutes: 5
-   last-stage-log-absolute-path: C:\cygwin64\tmp\akiro_stage_desktop.txt
+   last-stage-log-absolute-path: C:\cygwin64\tmp\akiro_stage_alex.txt
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game11
+   frequency-in-minutes: 5
+   last-stage-log-absolute-path: C:\cygwin64\tmp\akiro_stage_g11.txt
 
 # There is only one backup statement
 backup:
