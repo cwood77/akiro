@@ -85,6 +85,36 @@ void cmdRestore(inmem::config& c, const std::wstring& dir, const std::wstring& t
    }
 }
 
+void cmdCull(inmem::config& c)
+{
+   rootDb rDb(c);
+   getWorkerLog() << L"beginning cull..." << std::endl;
+
+   for(size_t i=0;i<kNumMonitors;i++)
+   {
+      auto& monitorCfg = c.monitors[i];
+      if(monitorCfg.frequencyInMinutes == 0) break;
+
+      getWorkerLog() << L"=========================" << std::endl;
+      getWorkerLog() << L"examining monitor " << monitorCfg.absolutePath << std::endl;
+
+      if(monitorCfg.rpolicy[0].olderThanInDays == 0)
+      {
+         getWorkerLog() << L"no policy; skipping" << std::endl;
+         getWorkerLog() << std::endl;
+         continue;
+      }
+
+      size_t key = rDb.findOrAddKey(monitorCfg.absolutePath);
+      treeDb tDb(c,key);
+      tDb.cull(monitorCfg);
+   }
+
+   getWorkerLog() << L"cull complete" << std::endl;
+
+   inmem::setState(&c.backup.state,inmem::states::kCmd_Prune);
+}
+
 void cmdPrune(inmem::config& c)
 {
    getWorkerLog() << L"beginning prune..." << std::endl;

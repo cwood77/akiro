@@ -8,7 +8,8 @@ int main(int argc, const char *argv[])
 {
    try
    {
-      std::wcout << L"akiro - https://github.com/cwood77/akiro" << std::endl;
+      std::wcout << L"akiro - simple background backups" << std::endl;
+      std::wcout << L"        https://github.com/cwood77/akiro" << std::endl;
       std::wcout << std::endl;
 
       if(argc == 1)
@@ -28,6 +29,7 @@ int main(int argc, const char *argv[])
          std::wcout << L"testing and rare case examples:" << std::endl;
          std::wcout << L"  akiro stage - trigger an immediate stage of all monitors" << std::endl;
          std::wcout << L"  akiro compact - trigger an immediate compaction" << std::endl;
+         std::wcout << L"  akiro cull - trigger immediate retention enforcement" << std::endl;
          std::wcout << L"  akiro prune - delete unreferenced archive data based on user" << std::endl;
          std::wcout << L"    changes to the root or tree db" << std::endl;
 
@@ -90,6 +92,12 @@ int main(int argc, const char *argv[])
          if(!pShmem.didExist())
             throw std::runtime_error("processes aren't running");
          cmdCompact(*pShmem);
+      }
+      else if(argc == 2 && argv[1] == std::string("cull"))
+      {
+         if(!pShmem.didExist())
+            throw std::runtime_error("processes aren't running");
+         cmdCull(*pShmem);
       }
       else if(argc == 2 && argv[1] == std::string("prune"))
       {

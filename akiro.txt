@@ -50,4 +50,5 @@ backup:
 
    # optional log paths for various operations... omit if you don't want it
    last-compact-log-absolute-path: C:\cygwin64\tmp\akiro_compact.txt
+   last-cull-log-absolute-path: C:\cygwin64\tmp\akiro_cull.txt
    last-prune-log-absolute-path: C:\cygwin64\tmp\akiro_prune.txt

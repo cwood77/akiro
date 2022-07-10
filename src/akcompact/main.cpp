@@ -20,11 +20,18 @@ void myMain()
    heartbeatThread hbeat(pShmem->backup,myEvt);
    hbeat.start();
    ::InterlockedExchange(&pShmem->backup.state,inmem::states::kStatus_Ready);
+   DWORD timeoutFreq = INFINITE;
+   if(pShmem->backup.retentionFrequencyInDays)
+      timeoutFreq = pShmem->backup.retentionFrequencyInDays*24*60*60*1000;
 
    while(true)
    {
-      myEvt.wait();
-      inmem::setState(&pShmem->backup.heartbeatAwk,pShmem->backup.heartbeat);
+      bool timedout;
+      myEvt.waitWithTimeout(timeoutFreq,timedout);
+
+      if(timedout)
+         inmem::setStateWhen(&pShmem->backup.state,inmem::states::kStatus_Ready,
+            inmem::states::kCmd_Cull,10);
 
       if(pShmem->backup.state == inmem::states::kCmd_Compact)
       {
@@ -81,6 +88,28 @@ void myMain()
          }
          getWorkerLog() << L"done" << std::endl;
       }
+      else if(pShmem->backup.state == inmem::states::kCmd_Cull)
+      {
+         std::unique_ptr<std::wostream> pStream;
+         if(pShmem->backup.lastCullLogAbsolutePath[0])
+            pStream.reset(new std::wofstream(pShmem->backup.lastCullLogAbsolutePath));
+         else
+            pStream.reset(new std::wstringstream());
+         workerLogBinding _wb(*pStream.get());
+
+         try
+         {
+            cmdCull(*pShmem);
+         }
+         catch(std::exception& x)
+         {
+            getWorkerLog() << L"ERROR:" << x.what() << std::endl;
+         }
+         getWorkerLog() << L"done" << std::endl;
+      }
+      else if(pShmem->backup.state == inmem::states::kCmd_Die)
+         break;
+
       if(pShmem->backup.state == inmem::states::kCmd_Prune)
       {
          std::unique_ptr<std::wostream> pStream;
@@ -100,9 +129,6 @@ void myMain()
          }
          getWorkerLog() << L"done" << std::endl;
       }
-
-      if(pShmem->backup.state == inmem::states::kCmd_Die)
-         break;
 
       inmem::setState(&pShmem->backup.state,inmem::states::kStatus_Ready);
    }

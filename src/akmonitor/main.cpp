@@ -66,4 +66,3 @@ void myMain()
 }
 
 implWorkerMain(myMain)
-
