@@ -101,7 +101,9 @@ void timestampBucket::cull(const std::wstring& basePath)
       if(m_keepers.find(timestamp)==m_keepers.end())
       {
          getWorkerLog() << L"deleting unretained timestamp " << timestamp << std::endl;
-         deleteFolderAndAllContents(basePath + L"\\" + timestamp);
+         BOOL success = ::DeleteFileW((basePath + L"\\" + timestamp).c_str());
+         if(!success)
+            throw std::runtime_error("failed to delete file");
       }
    }
 }
