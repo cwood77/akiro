@@ -1,8 +1,7 @@
+#include "../cmn/wlog.hpp"
 #include "shmem-block.hpp"
 #include "shmem.hpp"
 #include <stdexcept>
-
-#include "../cmn/wlog.hpp"
 
 autoShmemBase::autoShmemBase(size_t size, const std::string& name)
 : m_pPtr(NULL)
@@ -138,6 +137,7 @@ void heartbeatThread::_threadProc()
 folderWatch::folderWatch(const std::wstring& folder, size_t maxFrequencyInMinutes)
 : m_maxFrequencyInMinutes(maxFrequencyInMinutes)
 , m_lastFired(0)
+, m_lastIgnored(0)
 {
    m_hFind = ::FindFirstChangeNotificationW(
       folder.c_str(),
@@ -159,17 +159,39 @@ folderWatch::~folderWatch()
 
 bool folderWatch::waitUntilFolderChange(osEvent& otherEvt)
 {
-   auto maxFreqInSecs = m_maxFrequencyInMinutes * 60;
+   const auto maxFreqInSecs = m_maxFrequencyInMinutes * 60;
 
    while(true)
    {
       getWorkerLog() << L"[watch] waiting" << std::endl;
+      DWORD timeoutInMSec = INFINITE;
+      if(m_lastIgnored)
+      {
+         getWorkerLog() << L"[watch]    adjusting timeout for ignored change" << std::endl;
+         auto waitTime = ::time(NULL);
+         size_t elapsedSecs = waitTime - m_lastFired;
+         if(elapsedSecs >= maxFreqInSecs)
+            timeoutInMSec = 0;
+         else
+            timeoutInMSec = (maxFreqInSecs - elapsedSecs) * 1000;
+      }
       HANDLE hans[2];
       hans[0] = m_hFind;
       hans[1] = otherEvt._getHandle();
-      DWORD reason = ::WaitForMultipleObjects(2,hans,/*any*/FALSE,INFINITE);
+      DWORD reason = ::WaitForMultipleObjects(2,hans,/*any*/FALSE,timeoutInMSec);
       getWorkerLog() << L"[watch] awoke" << std::endl;
-      if(reason == WAIT_OBJECT_0)
+      if(reason == WAIT_TIMEOUT)
+      {
+         if(timeoutInMSec == INFINITE)
+            throw std::runtime_error("insanity from Wait function");
+
+         // this notification should be handled
+         getWorkerLog() << L"[watch] handling DEFERRED change" << std::endl;
+         m_lastFired = ::time(NULL);
+         m_lastIgnored = 0;
+         return true;
+      }
+      else if(reason == WAIT_OBJECT_0)
       {
          getWorkerLog() << L"[watch] folder changed" << std::endl;
          BOOL success = ::FindNextChangeNotification(m_hFind);
@@ -182,11 +204,14 @@ bool folderWatch::waitUntilFolderChange(osEvent& otherEvt)
          {
             // too soon; ignore this notification
             getWorkerLog() << L"[watch] ignoring change" << std::endl;
+            m_lastIgnored = signalTime;
             continue;
          }
-         getWorkerLog() << L"[watch] handling change" << std::endl;
+
          // this notification should be handled
+         getWorkerLog() << L"[watch] handling change" << std::endl;
          m_lastFired = signalTime;
+         m_lastIgnored = 0;
          return true;
       }
       else if(reason == WAIT_OBJECT_0 + 1)

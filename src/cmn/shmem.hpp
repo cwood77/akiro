@@ -83,15 +83,18 @@ private:
    HANDLE m_hThread;
 };
 
+// recursively observe a folder tree
 class folderWatch {
 public:
    folderWatch(const std::wstring& folder, size_t maxFrequencyInMinutes);
    ~folderWatch();
 
+   // return true if the tree changed, false if otherEvt was signalled
    bool waitUntilFolderChange(osEvent& otherEvt);
 
 private:
    const size_t m_maxFrequencyInMinutes;
    HANDLE m_hFind;
    time_t m_lastFired;
+   time_t m_lastIgnored;
 };
