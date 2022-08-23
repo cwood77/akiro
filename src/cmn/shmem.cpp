@@ -2,6 +2,8 @@
 #include "shmem.hpp"
 #include <stdexcept>
 
+#include "../cmn/wlog.hpp"
+
 autoShmemBase::autoShmemBase(size_t size, const std::string& name)
 : m_pPtr(NULL)
 , m_hMap(INVALID_HANDLE_VALUE)
@@ -130,5 +132,69 @@ void heartbeatThread::_threadProc()
 
       if(m_cfg.state == inmem::states::kCmd_Die)
          return;
+   }
+}
+
+folderWatch::folderWatch(const std::wstring& folder, size_t maxFrequencyInMinutes)
+: m_maxFrequencyInMinutes(maxFrequencyInMinutes)
+, m_lastFired(0)
+{
+   m_hFind = ::FindFirstChangeNotificationW(
+      folder.c_str(),
+      TRUE, // bWatchSubtree,
+      FILE_NOTIFY_CHANGE_FILE_NAME |
+      FILE_NOTIFY_CHANGE_DIR_NAME |
+      FILE_NOTIFY_CHANGE_ATTRIBUTES |
+      FILE_NOTIFY_CHANGE_SIZE |
+      FILE_NOTIFY_CHANGE_LAST_WRITE);
+
+   if(m_hFind == INVALID_HANDLE_VALUE)
+      throw std::runtime_error("failed to start file watch");
+}
+
+folderWatch::~folderWatch()
+{
+   ::FindCloseChangeNotification(m_hFind);
+}
+
+bool folderWatch::waitUntilFolderChange(osEvent& otherEvt)
+{
+   auto maxFreqInSecs = m_maxFrequencyInMinutes * 60;
+
+   while(true)
+   {
+      getWorkerLog() << L"[watch] waiting" << std::endl;
+      HANDLE hans[2];
+      hans[0] = m_hFind;
+      hans[1] = otherEvt._getHandle();
+      DWORD reason = ::WaitForMultipleObjects(2,hans,/*any*/FALSE,INFINITE);
+      getWorkerLog() << L"[watch] awoke" << std::endl;
+      if(reason == WAIT_OBJECT_0)
+      {
+         getWorkerLog() << L"[watch] folder changed" << std::endl;
+         BOOL success = ::FindNextChangeNotification(m_hFind);
+         if(!success)
+            throw std::runtime_error("insanity from Wait function");
+
+         auto signalTime = ::time(NULL);
+         size_t elapsedSecs = signalTime - m_lastFired;
+         if(m_lastFired!=0 && (elapsedSecs < maxFreqInSecs))
+         {
+            // too soon; ignore this notification
+            getWorkerLog() << L"[watch] ignoring change" << std::endl;
+            continue;
+         }
+         getWorkerLog() << L"[watch] handling change" << std::endl;
+         // this notification should be handled
+         m_lastFired = signalTime;
+         return true;
+      }
+      else if(reason == WAIT_OBJECT_0 + 1)
+      {
+         getWorkerLog() << L"[watch] something else changed" << std::endl;
+         return false;
+      }
+      else
+         throw std::runtime_error("insanity from Wait function");
    }
 }

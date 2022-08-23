@@ -82,3 +82,16 @@ private:
    osEvent& m_signal;
    HANDLE m_hThread;
 };
+
+class folderWatch {
+public:
+   folderWatch(const std::wstring& folder, size_t maxFrequencyInMinutes);
+   ~folderWatch();
+
+   bool waitUntilFolderChange(osEvent& otherEvt);
+
+private:
+   const size_t m_maxFrequencyInMinutes;
+   HANDLE m_hFind;
+   time_t m_lastFired;
+};
