@@ -100,6 +100,43 @@ All settings are in `akiro.txt`, which uses comments to explain what settings ar
 The Akiro configuration I use is available with the source, under the root folder, so feel free to check it out.
 
 ## How does Akiro store information?
+The configuration file will indicate a backup location, which is a folder that Akiro will manage.  Here's a simplified (the real thing is huge) listing of the backup folder on my machine:
+```
+C:\>tree /f C:\akiro-archive
+Folder PATH listing for volume OSDisk
+Volume serial number is 000000A4 10A5:7658
+C:\AKIRO-ARCHIVE
+│   roots.txt
+│
+├───f
+│       000abce007d488ebb7f9d6423d510d84
+│       001cece8e0717a942bde650fa86c89c0
+│       0021c59ec70df2fc0484b39506c91991
+│       003747a063be365b13f62cb0c06b38a5
+│       0038dd6a5ef28b96f175528d7d39c934
+│
+├───s
+└───t
+    └───0
+            20220710-122223
+```
+
+Let's walk though each of these peices.
+- The `s` subfolder (for **S**taging) is where monitors copy new data to.  This folder is emptied by the compaction operation once the files are cataloged and unique files added to the `f` folder.
+- The `roots.txt` file maps each monitored folder to a number.  If you open this file in notepad the mapping is pretty easy to divine.
+- The `t` subfolder (for **T**imestamps) contains a folder for each root, under which a file for each timestamp is stored.  These timestamp files are plain text, and describe the folder tree at the time of the capture, listing each file and its hash
+- The `f` subfolder (for **F**ile) contains *all* the files backed up.  All files in the backup are placed in this folder, with their hash as their name.  This allows files with the same contents to only be present once in the data.
+
+## How does Akiro keep the backup from growing forever? (Retention Policies)
+Akiro occasionally removes files from the backup to prevent consuming too much space.  You can control the frequency and age of files that are removed in the configuration file.
+
+Retention policies are enforced by two operations in succession, *culling* and *pruning*.
+- When *culling*, Akiro considers each timestamp and decides whether it should be deleted or not.  If so, it deletes the timestamp file under the **t** folder.
+- When *pruning*, Akiro traverses the entire backup, from roots to timestamps to files, and deletes any files that are unreferenced.
+
+Each of these operations can also be executed via the command-line interface.  So, for example, you could manually delete timestamp files yourself, then issue an `akiro prune` to tidy up the **f** folder.
+
+## What's next for Akiro? Or, what's left undone?
 **coming soon**
 
 [^1]: Akiro was the chronicler of Conan in *Conan the Barbarian*.
