@@ -40,6 +40,46 @@ monitor-absolute-path: C:\Users\cwood\Desktop\game11
    last-stage-log-absolute-path: C:\cygwin64\tmp\akiro_stage_g11.txt
    retention-policy: same-as-last-monitor
 
+monitor-absolute-path: C:\Users\cwood\Desktop\game13 - zocolypze
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game14 - miskU
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game15 - dogwater
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game18 - populus
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game19 - Cabin in the Woods
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game20 - novela
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game21 - nostoi
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
+monitor-absolute-path: C:\Users\cwood\Desktop\game22 - House on Haunted Hill
+   enabled: true
+   frequency-in-minutes: 5
+   retention-policy: same-as-last-monitor
+
 # There is only one backup statement (which is generally required)
 backup:
    # akiro writes lots of stuff here, so make sure there's plenty of room,
