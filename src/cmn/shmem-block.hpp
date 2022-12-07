@@ -3,7 +3,7 @@
 #include "windows.h"
 #include <string>
 
-#define kNumMonitors 10
+#define kNumMonitors 20
 
 namespace inmem {
 
